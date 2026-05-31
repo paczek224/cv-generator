@@ -18,6 +18,7 @@ public class CvRequest {
     private List<EducationEntry> educationList;
     private List<String> skills;
     private List<CertEntry> certifications;
+    private List<LangEntry> languages;
     private String jobOffer;
     private boolean enhanceCv;
     private String language = "eng";
@@ -50,5 +51,11 @@ public class CvRequest {
         private String name;
         private String issuer;
         private String date;
+    }
+
+    @Data
+    public static class LangEntry {
+        private String name;
+        private String level;
     }
 }

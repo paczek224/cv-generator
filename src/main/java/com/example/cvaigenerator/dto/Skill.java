@@ -6,13 +6,15 @@ import lombok.ToString;
 
 @Description("""
         Describes the skill user has with the level, min level 1, max level 5
+        Use SkillLevel enum values: BEGINNER, INTERMEDIATE, ADVANCED, EXPERT, MASTER
         example:
-        - Java 5/5
+        - Java MASTER
+        - Selenium EXPERT
         """)
 @Getter
 @ToString
 public class Skill {
 
-    String skill;
-    String level;
+    private String skill;
+    private SkillLevel level;
 }

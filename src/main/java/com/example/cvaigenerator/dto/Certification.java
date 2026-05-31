@@ -5,17 +5,17 @@ import lombok.Getter;
 import lombok.ToString;
 
 @Description("""
-Describing user certifications date format 2017-12
-example:
-name=ISQTB Foundation Level
-issuer=SJSI
-date=2017-12
-""")
+        Describing user certifications date format 2017-12
+        example:
+        name=ISTQB Foundation Level
+        issuer=SJSI
+        date=2017-12
+        """)
 @Getter
 @ToString
 public class Certification {
 
-    String name;
-    String issuer;
-    String date;
+    private String name;
+    private String issuer;
+    private String date;
 }

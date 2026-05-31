@@ -7,7 +7,7 @@ import lombok.ToString;
 @Description("""
         Describes user education
         dateformat 2011-10
-        
+
         example:
         school=Tadeusz Rejtan Technical College - Economy
         from=2011-10
@@ -17,7 +17,7 @@ import lombok.ToString;
 @ToString
 public class Education {
 
-    String school;
-    String from;
-    String to;
+    private String school;
+    private String from;
+    private String to;
 }

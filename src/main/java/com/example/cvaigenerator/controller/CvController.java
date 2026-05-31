@@ -3,7 +3,6 @@ package com.example.cvaigenerator.controller;
 import com.example.cvaigenerator.dto.CvRequest;
 import com.example.cvaigenerator.dto.CvResponse;
 import com.example.cvaigenerator.service.CvGeneratorAiClient;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,8 +12,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/cv")
 public class CvController {
 
-    @Autowired
-    private CvGeneratorAiClient client;
+    private final CvGeneratorAiClient client;
+
+    public CvController(CvGeneratorAiClient client) {
+        this.client = client;
+    }
 
     @PostMapping("/generate")
     public CvResponse generate(@RequestBody CvRequest req) {
@@ -22,7 +24,7 @@ public class CvController {
                 buildUserData(req),
                 req.getJobOffer(),
                 req.isEnhanceCv(),
-                req.getLanguage() != null ? req.getLanguage() : "eng"
+                req.getLanguage()
         );
     }
 
@@ -47,7 +49,7 @@ public class CvController {
 
         if (req.getSocialLinks() != null) {
             for (var link : req.getSocialLinks()) {
-                if (notBlank(link.getName())) {
+                if (notBlank(link.getName()) && notBlank(link.getUrl())) {
                     sb.append(link.getName().toUpperCase()).append("\n");
                     sb.append(link.getUrl()).append("\n\n");
                 }
@@ -64,7 +66,7 @@ public class CvController {
                 if (job.isCurrentJob()) {
                     sb.append("started: ").append(job.getFrom()).append("\n");
                 } else {
-                    sb.append("hired: ").append(job.getFrom()).append("- ").append(job.getTo()).append("\n");
+                    sb.append("hired: ").append(job.getFrom()).append(" - ").append(job.getTo()).append("\n");
                 }
                 sb.append("company: ").append(job.getCompanyName()).append("\n");
                 if (notBlank(job.getDuties())) {
@@ -79,7 +81,7 @@ public class CvController {
             for (var edu : req.getEducationList()) {
                 sb.append(edu.getSchool())
                         .append("    ").append(edu.getFrom())
-                        .append("- ").append(edu.getTo()).append("\n");
+                        .append(" - ").append(edu.getTo()).append("\n");
             }
             sb.append("\n");
         }
@@ -96,6 +98,14 @@ public class CvController {
                 sb.append(cert.getIssuer()).append(" - ")
                         .append(cert.getName()).append(" - ")
                         .append(cert.getDate()).append("\n");
+            }
+            sb.append("\n");
+        }
+
+        if (req.getLanguages() != null && !req.getLanguages().isEmpty()) {
+            sb.append("LANGUAGES:\n");
+            for (var lang : req.getLanguages()) {
+                sb.append(lang.getName()).append(" - ").append(lang.getLevel()).append("\n");
             }
         }
 

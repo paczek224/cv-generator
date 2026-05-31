@@ -26,10 +26,10 @@ import java.util.List;
 @ToString
 public class JobInfo {
 
-    String title;
-    String companyName;
-    List<String> duties;
-    String from;
-    String to;
-    boolean currentJob;
+    private String title;
+    private String companyName;
+    private List<String> duties;
+    private String from;
+    private String to;
+    private boolean currentJob;
 }

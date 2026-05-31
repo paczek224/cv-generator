@@ -15,13 +15,15 @@ import java.util.List;
 @ToString
 public class CvResponse {
 
-    String firstName;
-    String lastName;
-    String position;
-    String summary;
-    PersonalInfo personalInfo;
-    List<JobInfo> jobInfos;
-    List<Skill> skills;
-    List<Education> educations;
-    List<Certification> certifications;
+    private String firstName;
+    private String lastName;
+    private String position;
+    private String summary;
+    private PersonalInfo personalInfo;
+    private List<JobInfo> jobInfos;
+    private List<Skill> skills;
+    private List<Language> languages;
+    private List<Education> educations;
+    private List<Certification> certifications;
+    private String footerConsent;
 }

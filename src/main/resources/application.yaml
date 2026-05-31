@@ -2,27 +2,10 @@ spring:
   application:
     name: cv-ai-generator
 
-  datasource:
-    url: jdbc:h2:mem:testdb
-    driver-class-name: org.h2.Driver
-    username: sa
-    password: ""
-
-    h2:
-      console:
-        enabled: true
-        path: /h2-console
-
-    jpa:
-      database-platform: org.hibernate.dialect.H2Dialect
-      hibernate:
-        ddl-auto: create-drop
-      show-sql: true
-
-  logging:
-    level:
-      root: WARN
-      com.example.demoai: INFO
+logging:
+  level:
+    root: WARN
+    com.example.cvaigenerator: INFO
 
 langchain4j:
   open-ai:
