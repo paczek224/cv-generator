@@ -414,6 +414,43 @@ function enablePdfButton(firstName, lastName) {
 }
 
 // ══════════════════════════════════════════
+//  FIELD VALIDATION (phone & email)
+// ══════════════════════════════════════════
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// Allows an optional leading +, digits, spaces, dashes, dots and parentheses.
+const PHONE_RE = /^\+?[0-9\s\-().]+$/;
+
+function setFieldError(input, errEl, msg) {
+  if (msg) { input.classList.add('invalid'); errEl.textContent = msg; errEl.classList.add('visible'); }
+  else { input.classList.remove('invalid'); errEl.textContent = ''; errEl.classList.remove('visible'); }
+  return !msg;
+}
+
+// Both fields are optional — an empty value is considered valid.
+function validateEmail() {
+  const input = document.getElementById('email'), errEl = document.getElementById('emailError');
+  const val = input.value.trim();
+  return setFieldError(input, errEl, (!val || EMAIL_RE.test(val)) ? '' : 'Please enter a valid email address, e.g. you@example.com');
+}
+function validatePhone() {
+  const input = document.getElementById('phone'), errEl = document.getElementById('phoneError');
+  const val = input.value.trim();
+  const digits = (val.match(/\d/g) || []).length;
+  const ok = !val || (PHONE_RE.test(val) && digits >= 7 && digits <= 15);
+  return setFieldError(input, errEl, ok ? '' : 'Please enter a valid phone number (7–15 digits), e.g. +48 123 456 789');
+}
+
+function wireFieldValidation() {
+  [['email', validateEmail], ['phone', validatePhone]].forEach(([id, fn]) => {
+    const input = document.getElementById(id);
+    input.addEventListener('blur', fn);
+    // Re-validate while typing only once the field is already flagged, so the
+    // error clears as soon as the input becomes valid.
+    input.addEventListener('input', () => { if (input.classList.contains('invalid')) fn(); });
+  });
+}
+
+// ══════════════════════════════════════════
 //  SUBMIT
 // ══════════════════════════════════════════
 async function handleSubmit(e) {
@@ -421,6 +458,13 @@ async function handleSubmit(e) {
   const data = getFormData();
   if (!data.firstName||!data.lastName){ showError('Please enter your first and last name.'); return; }
   if (!data.jobOffer){ showError('Please enter the target job / position.'); return; }
+
+  const emailOk = validateEmail(), phoneOk = validatePhone();
+  if (!emailOk || !phoneOk) {
+    showError('Please correct the highlighted fields before generating your CV.');
+    document.querySelector('.field-error.visible')?.closest('.field')?.scrollIntoView({ behavior:'smooth', block:'center' });
+    return;
+  }
 
   // reset download button
   const dlBtn = document.getElementById('btnDownloadPdf');
@@ -602,6 +646,7 @@ buildThemeButtons();
 buildFontButtons();
 buildTemplateButtons();
 addSocialItem(); addWorkItem(); addEduItem(); addCertItem(); addLanguageItem();
+wireFieldValidation();
 
 fetch('/api/env/features')
   .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })

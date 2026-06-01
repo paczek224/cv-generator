@@ -38,6 +38,10 @@
     .field.full{grid-column:1/-1}
     label{font-size:.78rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em}
     .req{color:var(--primary)}
+    input.invalid{border-color:var(--danger)}
+    input.invalid:focus{border-color:var(--danger);box-shadow:0 0 0 3px rgba(239,68,68,.18)}
+    .field-error{display:none;color:var(--danger);font-size:.78rem;margin-top:-2px}
+    .field-error.visible{display:block}
     input[type="text"],input[type="email"],input[type="tel"],input[type="url"],select,textarea{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:.92rem;font-family:inherit;color:var(--text);background:var(--surface);outline:none;transition:border-color .15s,box-shadow .15s}
     input:focus,select:focus,textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-glow)}
     input::placeholder,textarea::placeholder{color:#cbd5e1}
