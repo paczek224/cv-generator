@@ -288,12 +288,12 @@ function addWorkItem(data={}) {
   const d=document.createElement('div'); d.className='list-item'; d.id=`workItem${n}`; d.dataset.testid=`work-item-${n}`;
   d.innerHTML=`<div class="list-item-header"><span class="item-badge">Position ${n}</span><button type="button" class="btn-remove" data-testid="work-remove-${n}" onclick="removeItem(this)">${RM} Remove</button></div>
   <div class="field-group">
-    <div class="field full"><label>Job Title <span class="req">*</span></label><input type="text" id="workTitle${n}" data-testid="work-title-${n}" class="w-title" placeholder="Senior Software Engineer" value="${esc(data.title||'')}"/></div>
-    <div class="field full"><label>Company, City, Country</label><input type="text" id="workCompany${n}" data-testid="work-company-${n}" class="w-company" placeholder="Acme Corp, Warsaw, Poland" value="${esc(data.companyName||'')}"/></div>
+    <div class="field full"><label>Job Title <span class="req">*</span></label><input type="text" id="workTitle${n}" data-testid="work-title-${n}" class="w-title" placeholder="Your job title at this company, e.g. Senior Software Engineer" value="${esc(data.title||'')}"/></div>
+    <div class="field full"><label>Company, City, Country</label><input type="text" id="workCompany${n}" data-testid="work-company-${n}" class="w-company" placeholder="Company name, city and country, e.g. Acme Corp, Warsaw, Poland" value="${esc(data.companyName||'')}"/></div>
     <div class="field"><label>From <span class="req">*</span></label><div class="picker-slot" data-cls="w-from" data-val="${esc(data.from||'')}" data-req="true" data-testid="work-from-${n}"></div></div>
     <div class="field to-group ${data.currentJob?'disabled':''}"><label>To</label><div class="picker-slot" data-cls="w-to" data-val="${esc(data.currentJob?'':(data.to||''))}" data-req="false" data-testid="work-to-${n}"></div></div>
     <div class="toggle-row"><label class="toggle"><input type="checkbox" id="workCurrent${n}" data-testid="work-current-${n}" class="w-current" onchange="toggleCurrent(this)" ${data.currentJob?'checked':''}/><div class="toggle-track"><div class="toggle-thumb"></div></div></label><span class="toggle-label">Currently working here</span></div>
-    <div class="field full"><label>Duties &amp; Technologies</label><textarea id="workDuties${n}" data-testid="work-duties-${n}" class="w-duties" rows="4" placeholder="- Automation frameworks&#10;- API testing&#10;- CI/CD">${esc(data.duties||'')}</textarea></div>
+    <div class="field full"><label>Duties &amp; Technologies</label><textarea id="workDuties${n}" data-testid="work-duties-${n}" class="w-duties" rows="4" placeholder="Describe what you did here — rough notes are fine, AI will rewrite everything professionally.&#10;e.g. I automated regression tests, worked with REST APIs, used Jenkins and Docker for CI/CD">${esc(data.duties||'')}</textarea></div>
   </div>`;
   document.getElementById('workList').appendChild(d); initPickers(d);
 }
@@ -304,7 +304,7 @@ function addEduItem(data={}) {
   const d=document.createElement('div'); d.className='list-item'; d.id=`eduItem${n}`; d.dataset.testid=`edu-item-${n}`;
   d.innerHTML=`<div class="list-item-header"><span class="item-badge">Education ${n}</span><button type="button" class="btn-remove" data-testid="edu-remove-${n}" onclick="removeItem(this)">${RM} Remove</button></div>
   <div class="field-group">
-    <div class="field full"><label>School / University &amp; Field of Study</label><input type="text" id="eduSchool${n}" data-testid="edu-school-${n}" class="e-school" placeholder="University of Warsaw – Computer Science" value="${esc(data.school||'')}"/></div>
+    <div class="field full"><label>School / University &amp; Field of Study</label><input type="text" id="eduSchool${n}" data-testid="edu-school-${n}" class="e-school" placeholder="School or university name and field of study, e.g. University of Warsaw – Computer Science" value="${esc(data.school||'')}"/></div>
     <div class="field"><label>From <span class="req">*</span></label><div class="picker-slot" data-cls="e-from" data-val="${esc(data.from||'')}" data-req="true" data-testid="edu-from-${n}"></div></div>
     <div class="field"><label>To <span class="req">*</span></label><div class="picker-slot" data-cls="e-to" data-val="${esc(data.to||'')}" data-req="true" data-testid="edu-to-${n}"></div></div>
   </div>`;
@@ -316,8 +316,8 @@ function addSocialItem(data={}) {
   const d=document.createElement('div'); d.className='list-item'; d.id=`socialItem${n}`; d.dataset.testid=`social-item-${n}`;
   d.innerHTML=`<div class="list-item-header"><span class="item-badge">Link ${n}</span><button type="button" class="btn-remove" data-testid="social-remove-${n}" onclick="removeItem(this)">${RM} Remove</button></div>
   <div class="field-group">
-    <div class="field"><label>Platform</label><input type="text" id="socialName${n}" data-testid="social-name-${n}" class="s-name" placeholder="LinkedIn" value="${esc(data.name||'')}"/></div>
-    <div class="field"><label>URL</label><input type="url" id="socialUrl${n}" data-testid="social-url-${n}" class="s-url" placeholder="https://linkedin.com/in/you" value="${esc(data.url||'')}"/></div>
+    <div class="field"><label>Platform</label><input type="text" id="socialName${n}" data-testid="social-name-${n}" class="s-name" placeholder="Platform name, e.g. LinkedIn or GitHub" value="${esc(data.name||'')}"/></div>
+    <div class="field"><label>URL</label><input type="url" id="socialUrl${n}" data-testid="social-url-${n}" class="s-url" placeholder="Full profile URL, e.g. https://linkedin.com/in/yourname" value="${esc(data.url||'')}"/></div>
   </div>`;
   document.getElementById('socialList').appendChild(d);
 }
@@ -327,8 +327,8 @@ function addCertItem(data={}) {
   const d=document.createElement('div'); d.className='list-item'; d.id=`certItem${n}`; d.dataset.testid=`cert-item-${n}`;
   d.innerHTML=`<div class="list-item-header"><span class="item-badge">Certificate ${n}</span><button type="button" class="btn-remove" data-testid="cert-remove-${n}" onclick="removeItem(this)">${RM} Remove</button></div>
   <div class="field-group">
-    <div class="field full"><label>Certificate Name</label><input type="text" id="certName${n}" data-testid="cert-name-${n}" class="c-name" placeholder="ISTQB Foundation Level" value="${esc(data.name||'')}"/></div>
-    <div class="field"><label>Issuer</label><input type="text" id="certIssuer${n}" data-testid="cert-issuer-${n}" class="c-issuer" placeholder="SJSI" value="${esc(data.issuer||'')}"/></div>
+    <div class="field full"><label>Certificate Name</label><input type="text" id="certName${n}" data-testid="cert-name-${n}" class="c-name" placeholder="Certificate or course name, e.g. ISTQB Foundation Level" value="${esc(data.name||'')}"/></div>
+    <div class="field"><label>Issuer</label><input type="text" id="certIssuer${n}" data-testid="cert-issuer-${n}" class="c-issuer" placeholder="Issuing organization, e.g. SJSI or Coursera" value="${esc(data.issuer||'')}"/></div>
     <div class="field"><label>Date <span class="req">*</span></label><div class="picker-slot" data-cls="c-date" data-val="${esc(data.date||'')}" data-req="true" data-testid="cert-date-${n}"></div></div>
   </div>`;
   document.getElementById('certList').appendChild(d); initPickers(d);
@@ -340,7 +340,7 @@ function addLanguageItem(data={}) {
   const d=document.createElement('div'); d.className='list-item'; d.id=`langItem${n}`; d.dataset.testid=`lang-item-${n}`;
   d.innerHTML=`<div class="list-item-header"><span class="item-badge">Language ${n}</span><button type="button" class="btn-remove" data-testid="lang-remove-${n}" onclick="removeItem(this)">${RM} Remove</button></div>
   <div class="field-group">
-    <div class="field"><label>Language</label><input type="text" id="langName${n}" data-testid="lang-name-${n}" class="l-name" placeholder="English" value="${esc(data.name||'')}"/></div>
+    <div class="field"><label>Language</label><input type="text" id="langName${n}" data-testid="lang-name-${n}" class="l-name" placeholder="Language name, e.g. English or Polish" value="${esc(data.name||'')}"/></div>
     <div class="field"><label>Level</label><select id="langLevel${n}" data-testid="lang-level-${n}" class="l-level">${lvls.map(l=>`<option value="${l}" ${data.level===l?'selected':''}>${l==='Native'?'Native':l+' – '+{C2:'Mastery',C1:'Advanced',B2:'Upper Intermediate',B1:'Intermediate',A2:'Elementary',A1:'Beginner'}[l]}</option>`).join('')}</select></div>
   </div>`;
   document.getElementById('langList').appendChild(d);
@@ -602,3 +602,8 @@ buildThemeButtons();
 buildFontButtons();
 buildTemplateButtons();
 addSocialItem(); addWorkItem(); addEduItem(); addCertItem(); addLanguageItem();
+
+fetch('/api/env/features')
+  .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+  .then(f => { if (f.sampleData) document.getElementById('btnLoadSample').style.display = ''; })
+  .catch(err => console.warn('[env/features]', err));

@@ -1,0 +1,10 @@
+app:
+  features:
+    sample-data: true
+
+langchain4j:
+  open-ai:
+    chat-model:
+      api-key: ${API_KEY}
+      model-name: gemini-3.1-flash-lite
+      base-url: https://generativelanguage.googleapis.com/v1beta/openai/

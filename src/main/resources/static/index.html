@@ -14,7 +14,7 @@
   <h1>CV AI Generator</h1>
   <p>Fill in your details — AI will craft a professional CV for you</p>
   <div class="header-actions">
-    <button id="btnLoadSample" data-testid="btn-load-sample" class="btn-sample" onclick="loadSampleData()">Load sample data</button>
+    <button id="btnLoadSample" data-testid="btn-load-sample" class="btn-sample" onclick="loadSampleData()" style="display:none">Load sample data</button>
   </div>
 </header>
 
@@ -33,12 +33,12 @@
         <div><div class="card-title">Personal Information</div><div class="card-subtitle">Name, contact details and position</div></div>
       </div>
       <div class="field-group">
-        <div class="field"><label>First Name <span class="req">*</span></label><input type="text" id="firstName" data-testid="input-first-name" placeholder="Jan" required/></div>
-        <div class="field"><label>Last Name <span class="req">*</span></label><input type="text" id="lastName" data-testid="input-last-name" placeholder="Kowalski" required/></div>
-        <div class="field full"><label>Current / Desired Position <span class="req">*</span></label><input type="text" id="position" data-testid="input-position" placeholder="e.g. Senior Software Engineer" required/></div>
-        <div class="field full"><label>Address</label><input type="text" id="address" data-testid="input-address" placeholder="City, Country"/></div>
-        <div class="field"><label>Phone</label><input type="tel" id="phone" data-testid="input-phone" placeholder="+48 000 000 000"/></div>
-        <div class="field"><label>Email</label><input type="email" id="email" data-testid="input-email" placeholder="you@example.com"/></div>
+        <div class="field"><label>First Name <span class="req">*</span></label><input type="text" id="firstName" data-testid="input-first-name" placeholder="Enter your first name, e.g. Jan" required/></div>
+        <div class="field"><label>Last Name <span class="req">*</span></label><input type="text" id="lastName" data-testid="input-last-name" placeholder="Enter your last name, e.g. Kowalski" required/></div>
+        <div class="field full"><label>Current / Desired Position <span class="req">*</span></label><input type="text" id="position" data-testid="input-position" placeholder="What is your current or target role? e.g. Senior Software Engineer" required/></div>
+        <div class="field full"><label>Address</label><input type="text" id="address" data-testid="input-address" placeholder="Your city and country, e.g. Warsaw, Poland"/></div>
+        <div class="field"><label>Phone</label><input type="tel" id="phone" data-testid="input-phone" placeholder="Your phone number, e.g. +48 123 456 789"/></div>
+        <div class="field"><label>Email</label><input type="email" id="email" data-testid="input-email" placeholder="Your email address, e.g. you@example.com"/></div>
       </div>
     </div>
 
@@ -79,7 +79,7 @@
         <div><div class="card-title">Skills</div><div class="card-subtitle">One skill per line</div></div>
       </div>
       <div class="field">
-        <textarea id="skills" data-testid="textarea-skills" rows="6" placeholder="Java MASTER&#10;Spring Boot EXPERT&#10;Selenium / Playwright ADVANCED&#10;REST Assured 4&#10;Docker 3&#10;Jenkins / GitHub Actions INTERMEDIATE&#10;&#10;Skill levels: 1-5 or BEGINNER / INTERMEDIATE / ADVANCED / EXPERT / MASTER"></textarea>
+        <textarea id="skills" data-testid="textarea-skills" rows="6" placeholder="List your skills with levels — rough notes are fine, AI will clean everything up.&#10;e.g.:&#10;Java EXPERT&#10;Spring Boot ADVANCED&#10;Docker INTERMEDIATE&#10;&#10;Levels: 1–5 or BEGINNER / INTERMEDIATE / ADVANCED / EXPERT / MASTER"></textarea>
       </div>
     </div>
 
@@ -153,7 +153,7 @@
         <div><div class="card-title">Generate Options</div><div class="card-subtitle">Tailor the AI output to your target role</div></div>
       </div>
       <div class="field-group">
-        <div class="field full"><label>Target Job / Position <span class="req">*</span></label><input type="text" id="jobOffer" data-testid="input-job-offer" placeholder="e.g. Senior Test Automation Engineer" required/></div>
+        <div class="field full"><label>Target Job / Position <span class="req">*</span></label><input type="text" id="jobOffer" data-testid="input-job-offer" placeholder="What role are you applying for? e.g. Senior Test Automation Engineer — AI will tailor your CV to this position" required/></div>
         <div class="field">
           <label>Output Language</label>
           <select id="language" data-testid="select-language">

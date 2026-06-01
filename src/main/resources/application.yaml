@@ -1,15 +1,11 @@
+kind: Application
+
 spring:
   application:
     name: cv-ai-generator
-
+  profiles:
+    active: prod
 logging:
   level:
     root: WARN
     com.example.cvaigenerator: INFO
-
-langchain4j:
-  open-ai:
-    chat-model:
-      api-key: 
-      model-name: gemini-3.1-flash-lite
-      base-url: https://generativelanguage.googleapis.com/v1beta/openai/
