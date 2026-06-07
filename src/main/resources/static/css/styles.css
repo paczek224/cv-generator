@@ -154,6 +154,17 @@
 .btn-secondary{display:flex;align-items:center;gap:6px;padding:8px 18px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);font-size:.85rem;font-weight:500;font-family:inherit;cursor:pointer;transition:all .15s}
     .btn-secondary:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-light)}
     .btn-secondary svg{width:15px;height:15px;stroke:currentColor}
+    .btn-secondary.active{border-color:var(--primary);color:var(--primary);background:var(--primary-light)}
+
+    /* ── Inline editing of the generated CV (screen only) ── */
+    .edit-hint{display:none;font-size:.8rem;color:var(--text-muted,#64748b);font-style:italic}
+    .edit-hint.visible{display:inline}
+    @media screen{
+      .cv-doc.editing [data-edit]{outline:1px dashed rgba(99,102,241,.5);outline-offset:2px;border-radius:3px;cursor:text;transition:background .12s,outline-color .12s}
+      .cv-doc.editing [data-edit]:hover{background:rgba(99,102,241,.09)}
+      .cv-doc.editing [data-edit]:focus{outline:2px solid var(--primary);background:rgba(99,102,241,.07)}
+      .cv-doc.editing a[data-edit]{cursor:text}
+    }
 
     /* ══════════════════════════════════
        CV DOCUMENT — CSS-variable driven

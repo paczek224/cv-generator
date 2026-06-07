@@ -490,14 +490,76 @@ function hideError(){ document.getElementById('errorBox').classList.remove('visi
 // ══════════════════════════════════════════
 function renderCv(cv) {
   _lastCvData = cv;
+  // Normalize duties to arrays up front so inline edits can be written back by index.
+  (cv.jobInfos||[]).forEach(j => { j.duties = _duties(j); });
   const el = document.getElementById('cvDoc');
   el.removeAttribute('style'); // clear inline theme vars — reapplied by applyAppearanceToCvDoc
   const renders = { classic: renderClassic, executive: renderExecutive, timeline: renderTimeline, lumina: renderLumina };
   (renders[currentTemplate] || renderClassic)(cv, el);
   applyAppearanceToCvDoc();
+  applyEditableState(); // keep inline-edit mode active across re-renders (template switch)
   const wrap = document.getElementById('cvResultWrap');
   wrap.classList.add('visible');
   wrap.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+// ══════════════════════════════════════════
+//  INLINE EDITING OF THE GENERATED CV
+// ══════════════════════════════════════════
+let _editing = false;
+
+// Write a value into a nested path of the CV data object, e.g.
+// "jobInfos.0.duties.1" or "personalInfo.address". Missing containers are created.
+function setPath(obj, path, val) {
+  const parts = path.split('.');
+  let o = obj;
+  for (let i = 0; i < parts.length - 1; i++) {
+    const k = parts[i];
+    if (o[k] == null) o[k] = /^\d+$/.test(parts[i+1]) ? [] : {};
+    o = o[k];
+  }
+  o[parts[parts.length - 1]] = val;
+}
+
+function applyEditableState() {
+  const doc = document.getElementById('cvDoc');
+  if (!doc) return;
+  doc.classList.toggle('editing', _editing);
+  doc.querySelectorAll('[data-edit]').forEach(el => { el.contentEditable = _editing ? 'true' : 'false'; });
+  const btn = document.getElementById('btnEditText');
+  if (btn) {
+    btn.classList.toggle('active', _editing);
+    btn.innerHTML = _editing
+      ? `<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Done editing`
+      : `<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>Edit text`;
+  }
+  document.getElementById('editHint')?.classList.toggle('visible', _editing);
+}
+
+function toggleEdit() {
+  _editing = !_editing;
+  applyEditableState();
+  if (_editing) document.querySelector('#cvDoc [data-edit]')?.focus();
+}
+
+// Persist inline edits back into _lastCvData so they survive theme/template
+// switches and are picked up by the PDF export (which prints the live DOM).
+function wireInlineEditing() {
+  const doc = document.getElementById('cvDoc');
+  doc.addEventListener('input', e => {
+    if (!_editing || !_lastCvData) return;
+    const t = e.target.closest('[data-edit]');
+    if (!t) return;
+    setPath(_lastCvData, t.dataset.edit, t.innerText.replace(/ /g, ' ').trim());
+  });
+  // While editing, a click on a link should place the caret, not navigate away.
+  doc.addEventListener('click', e => { if (_editing && e.target.closest('a')) e.preventDefault(); });
+  // Enter ends editing on single-line fields; only the multi-line Profile keeps newlines.
+  doc.addEventListener('keydown', e => {
+    if (!_editing || e.key !== 'Enter' || e.shiftKey) return;
+    const t = e.target.closest('[data-edit]');
+    if (t && t.dataset.edit !== 'summary') { e.preventDefault(); t.blur(); }
+  });
 }
 
 // shared helpers
@@ -510,76 +572,81 @@ function _duties(j) { const d=Array.isArray(j.duties)?j.duties:(j.duties?[j.duti
 function _period(j) { return j.currentJob?`${j.from||''} – Present`:[j.from,j.to].filter(Boolean).join(' – '); }
 function _langsSidebarHtml(langs) {
   if (!langs||!langs.length) return '';
-  return `<div class="cv-section"><div class="cv-section-title">Languages</div>${langs.map(l=>`<div class="cv-lang"><span class="cv-lang-name">${esc(l.language||'')}</span><span class="cv-lang-badge">${esc(l.level||'')}</span></div>`).join('')}</div>`;
+  return `<div class="cv-section"><div class="cv-section-title">Languages</div>${langs.map((l,i)=>`<div class="cv-lang"><span class="cv-lang-name" data-edit="languages.${i}.language">${esc(l.language||'')}</span><span class="cv-lang-badge" data-edit="languages.${i}.level">${esc(l.level||'')}</span></div>`).join('')}</div>`;
 }
 function _langsChipsHtml(langs) {
   if (!langs||!langs.length) return '';
-  return `<div class="tl-section"><div class="tl-sec-title">Languages</div><div class="tl-lang-chips">${langs.map(l=>`<span class="tl-lang-chip">${esc(l.language||'')}${l.level?`<span class="tl-lang-chip-level">${esc(l.level)}</span>`:''}</span>`).join('')}</div></div>`;
+  return `<div class="tl-section"><div class="tl-sec-title">Languages</div><div class="tl-lang-chips">${langs.map((l,i)=>`<span class="tl-lang-chip"><span data-edit="languages.${i}.language">${esc(l.language||'')}</span>${l.level?`<span class="tl-lang-chip-level" data-edit="languages.${i}.level">${esc(l.level)}</span>`:''}</span>`).join('')}</div></div>`;
+}
+
+// ── Shared section builders (Classic / Executive / Lumina) ──
+// Each editable leaf carries a `data-edit` path into the CV data object so inline
+// edits can be written straight back to _lastCvData (see wireInlineEditing).
+function _contactHtml(pi) {
+  return (pi.address||pi.phone||pi.email)?`<div class="cv-section"><div class="cv-section-title">Contact</div><div class="cv-contact">
+    ${pi.address?`<div class="cv-contact-item">${_svgPin()}<span data-edit="personalInfo.address">${esc(pi.address)}</span></div>`:''}
+    ${pi.phone?`<div class="cv-contact-item">${_svgPhone()}<span data-edit="personalInfo.phone">${esc(pi.phone)}</span></div>`:''}
+    ${pi.email?`<div class="cv-contact-item">${_svgMail()}<span data-edit="personalInfo.email">${esc(pi.email)}</span></div>`:''}
+  </div></div>`:'';
+}
+function _linksHtml(links) {
+  return links.length?`<div class="cv-section"><div class="cv-section-title">Links</div><div class="cv-social">${links.map((l,i)=>`<div class="cv-social-entry"><div class="cv-social-name" data-edit="personalInfo.socialMediaLinks.${i}.name">${esc(l.name||'')}</div><a href="${esc(l.link||'#')}" target="_blank" rel="noopener" data-edit="personalInfo.socialMediaLinks.${i}.link">${esc(l.link||'')}</a></div>`).join('')}</div></div>`:'';
+}
+function _sklsHtml(skls) {
+  return skls.length?`<div class="cv-section"><div class="cv-section-title">Skills</div>${skls.map((s,i)=>{const lvl={BEGINNER:1,INTERMEDIATE:2,ADVANCED:3,EXPERT:4,MASTER:5}[s.level]||3;return`<div class="cv-skill"><div class="cv-skill-row"><span class="cv-skill-name" data-edit="skills.${i}.skill">${esc(s.skill||'')}</span><span class="cv-skill-level">${lvl}/5</span></div><div class="cv-skill-bar"><div class="cv-skill-fill" style="width:${lvl*20}%"></div></div></div>`;}).join('')}</div>`:'';
+}
+function _certsHtml(certs) {
+  return certs.length?`<div class="cv-section"><div class="cv-section-title">Certifications</div>${certs.map((c,i)=>`<div class="cv-cert"><div class="cv-cert-name" data-edit="certifications.${i}.name">${esc(c.name||'')}</div><div class="cv-cert-meta">${[c.issuer,c.date].filter(Boolean).map(esc).join(' · ')}</div></div>`).join('')}</div>`:'';
+}
+function _summaryHtml(cv) {
+  return cv.summary?`<div class="cv-section"><div class="cv-section-title">Profile</div><div class="cv-summary" data-edit="summary">${esc(cv.summary)}</div></div>`:'';
+}
+function _jobsHtml(jobs) {
+  return jobs.length?`<div class="cv-section"><div class="cv-section-title">Work Experience</div>${jobs.map((j,i)=>{const d=_duties(j);return`<div class="cv-job"><div class="cv-job-top"><div class="cv-job-title" data-edit="jobInfos.${i}.title">${esc(j.title||j.companyName||'')}</div><div class="cv-job-period">${esc(_period(j))}</div></div><div class="cv-job-company" data-edit="jobInfos.${i}.companyName">${esc(j.title?j.companyName:'')}</div>${d.length?`<ul class="cv-job-duties">${d.map((x,k)=>`<li data-edit="jobInfos.${i}.duties.${k}">${esc(x)}</li>`).join('')}</ul>`:''}</div>`;}).join('')}</div>`:'';
+}
+function _eduHtml(edus) {
+  return edus.length?`<div class="cv-section"><div class="cv-section-title">Education</div>${edus.map((e,i)=>`<div class="cv-edu"><span class="cv-edu-school" data-edit="educations.${i}.school">${esc(e.school||'')}</span><span class="cv-edu-period">${[e.from,e.to].filter(Boolean).join(' – ')}</span></div>`).join('')}</div>`:'';
+}
+function _nameHtml(cv) {
+  return `<span data-edit="firstName">${esc(cv.firstName||'')}</span> <span data-edit="lastName">${esc(cv.lastName||'')}</span>`;
 }
 
 // ── Classic ──────────────────────────────
 function renderClassic(cv, el) {
   el.className = 'cv-doc';
   const pi=cv.personalInfo||{}, jobs=cv.jobInfos||[], edus=cv.educations||[], skls=cv.skills||[], certs=cv.certifications||[], langs=cv.languages||[], links=pi.socialMediaLinks||[];
-  const name=[cv.firstName,cv.lastName].filter(Boolean).join(' ');
 
-  const contactHtml=(pi.address||pi.phone||pi.email)?`<div class="cv-section"><div class="cv-section-title">Contact</div><div class="cv-contact">
-    ${pi.address?`<div class="cv-contact-item">${_svgPin()}<span>${esc(pi.address)}</span></div>`:''}
-    ${pi.phone?`<div class="cv-contact-item">${_svgPhone()}<span>${esc(pi.phone)}</span></div>`:''}
-    ${pi.email?`<div class="cv-contact-item">${_svgMail()}<span>${esc(pi.email)}</span></div>`:''}
-  </div></div>`:'';
-  const linksHtml=links.length?`<div class="cv-section"><div class="cv-section-title">Links</div><div class="cv-social">${links.map(l=>`<div class="cv-social-entry"><div class="cv-social-name">${esc(l.name||'')}</div><a href="${esc(l.link||'#')}" target="_blank" rel="noopener">${esc(l.link||'')}</a></div>`).join('')}</div></div>`:'';
-  const sklsHtml=skls.length?`<div class="cv-section"><div class="cv-section-title">Skills</div>${skls.map(s=>{const lvl={BEGINNER:1,INTERMEDIATE:2,ADVANCED:3,EXPERT:4,MASTER:5}[s.level]||3;return`<div class="cv-skill"><div class="cv-skill-row"><span class="cv-skill-name">${esc(s.skill||'')}</span><span class="cv-skill-level">${lvl}/5</span></div><div class="cv-skill-bar"><div class="cv-skill-fill" style="width:${lvl*20}%"></div></div></div>`;}).join('')}</div>`:'';
-  const certsHtml=certs.length?`<div class="cv-section"><div class="cv-section-title">Certifications</div>${certs.map(c=>`<div class="cv-cert"><div class="cv-cert-name">${esc(c.name||'')}</div><div class="cv-cert-meta">${[c.issuer,c.date].filter(Boolean).map(esc).join(' · ')}</div></div>`).join('')}</div>`:'';
-  const summaryHtml=cv.summary?`<div class="cv-section"><div class="cv-section-title">Profile</div><div class="cv-summary">${esc(cv.summary)}</div></div>`:'';
-  const jobsHtml=jobs.length?`<div class="cv-section"><div class="cv-section-title">Work Experience</div>${jobs.map(j=>{const d=_duties(j);return`<div class="cv-job"><div class="cv-job-top"><div class="cv-job-title">${esc(j.title||j.companyName||'')}</div><div class="cv-job-period">${esc(_period(j))}</div></div><div class="cv-job-company">${esc(j.title?j.companyName:'')}</div>${d.length?`<ul class="cv-job-duties">${d.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}</div>`;}).join('')}</div>`:'';
-  const eduHtml=edus.length?`<div class="cv-section"><div class="cv-section-title">Education</div>${edus.map(e=>`<div class="cv-edu"><span class="cv-edu-school">${esc(e.school||'')}</span><span class="cv-edu-period">${[e.from,e.to].filter(Boolean).join(' – ')}</span></div>`).join('')}</div>`:'';
-
-  el.innerHTML=`<div class="cv-doc-header"><div class="cv-header-inner"><div class="cv-header-text"><div class="cv-doc-name">${esc(name)}</div><div class="cv-doc-position">${esc(cv.position||'')}</div></div>${_photoTag('cv-header-photo')}</div></div><div class="cv-doc-body"><div class="cv-sidebar">${contactHtml}${linksHtml}${sklsHtml}${certsHtml}${_langsSidebarHtml(langs)}</div><div class="cv-main">${summaryHtml}${jobsHtml}${eduHtml}</div></div>${cv.footerConsent?`<div class="cv-footer">${esc(cv.footerConsent)}</div>`:''}`;
+  el.innerHTML=`<div class="cv-doc-header"><div class="cv-header-inner"><div class="cv-header-text"><div class="cv-doc-name">${_nameHtml(cv)}</div><div class="cv-doc-position" data-edit="position">${esc(cv.position||'')}</div></div>${_photoTag('cv-header-photo')}</div></div><div class="cv-doc-body"><div class="cv-sidebar">${_contactHtml(pi)}${_linksHtml(links)}${_sklsHtml(skls)}${_certsHtml(certs)}${_langsSidebarHtml(langs)}</div><div class="cv-main">${_summaryHtml(cv)}${_jobsHtml(jobs)}${_eduHtml(edus)}</div></div>${cv.footerConsent?`<div class="cv-footer">${esc(cv.footerConsent)}</div>`:''}`;
 }
 
 // ── Executive ────────────────────────────
 function renderExecutive(cv, el) {
   el.className = 'cv-doc';
   const pi=cv.personalInfo||{}, jobs=cv.jobInfos||[], edus=cv.educations||[], skls=cv.skills||[], certs=cv.certifications||[], langs=cv.languages||[], links=pi.socialMediaLinks||[];
-  const name=[cv.firstName,cv.lastName].filter(Boolean).join(' ');
 
-  const contactHtml=(pi.address||pi.phone||pi.email)?`<div class="cv-section"><div class="cv-section-title">Contact</div><div class="cv-contact">
-    ${pi.address?`<div class="cv-contact-item">${_svgPin()}<span>${esc(pi.address)}</span></div>`:''}
-    ${pi.phone?`<div class="cv-contact-item">${_svgPhone()}<span>${esc(pi.phone)}</span></div>`:''}
-    ${pi.email?`<div class="cv-contact-item">${_svgMail()}<span>${esc(pi.email)}</span></div>`:''}
-  </div></div>`:'';
-  const linksHtml=links.length?`<div class="cv-section"><div class="cv-section-title">Links</div><div class="cv-social">${links.map(l=>`<div class="cv-social-entry"><div class="cv-social-name">${esc(l.name||'')}</div><a href="${esc(l.link||'#')}" target="_blank" rel="noopener">${esc(l.link||'')}</a></div>`).join('')}</div></div>`:'';
-  const sklsHtml=skls.length?`<div class="cv-section"><div class="cv-section-title">Skills</div>${skls.map(s=>{const lvl={BEGINNER:1,INTERMEDIATE:2,ADVANCED:3,EXPERT:4,MASTER:5}[s.level]||3;return`<div class="cv-skill"><div class="cv-skill-row"><span class="cv-skill-name">${esc(s.skill||'')}</span><span class="cv-skill-level">${lvl}/5</span></div><div class="cv-skill-bar"><div class="cv-skill-fill" style="width:${lvl*20}%"></div></div></div>`;}).join('')}</div>`:'';
-  const certsHtml=certs.length?`<div class="cv-section"><div class="cv-section-title">Certifications</div>${certs.map(c=>`<div class="cv-cert"><div class="cv-cert-name">${esc(c.name||'')}</div><div class="cv-cert-meta">${[c.issuer,c.date].filter(Boolean).map(esc).join(' · ')}</div></div>`).join('')}</div>`:'';
-  const summaryHtml=cv.summary?`<div class="cv-section"><div class="cv-section-title">Profile</div><div class="cv-summary">${esc(cv.summary)}</div></div>`:'';
-  const jobsHtml=jobs.length?`<div class="cv-section"><div class="cv-section-title">Work Experience</div>${jobs.map(j=>{const d=_duties(j);return`<div class="cv-job"><div class="cv-job-top"><div class="cv-job-title">${esc(j.title||j.companyName||'')}</div><div class="cv-job-period">${esc(_period(j))}</div></div><div class="cv-job-company">${esc(j.title?j.companyName:'')}</div>${d.length?`<ul class="cv-job-duties">${d.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}</div>`;}).join('')}</div>`:'';
-  const eduHtml=edus.length?`<div class="cv-section"><div class="cv-section-title">Education</div>${edus.map(e=>`<div class="cv-edu"><span class="cv-edu-school">${esc(e.school||'')}</span><span class="cv-edu-period">${[e.from,e.to].filter(Boolean).join(' – ')}</span></div>`).join('')}</div>`:'';
-
-  el.innerHTML=`<div class="cv-doc-header"><div class="cv-header-inner"><div class="cv-header-text"><div class="cv-doc-name">${esc(name)}</div><div class="cv-doc-position">${esc(cv.position||'')}</div></div>${_photoTag('cv-header-photo')}</div></div><div class="cv-doc-body"><div class="cv-sidebar exec-sidebar">${contactHtml}${linksHtml}${sklsHtml}${certsHtml}${_langsSidebarHtml(langs)}</div><div class="cv-main">${summaryHtml}${jobsHtml}${eduHtml}</div></div>${cv.footerConsent?`<div class="cv-footer">${esc(cv.footerConsent)}</div>`:''}`;
+  el.innerHTML=`<div class="cv-doc-header"><div class="cv-header-inner"><div class="cv-header-text"><div class="cv-doc-name">${_nameHtml(cv)}</div><div class="cv-doc-position" data-edit="position">${esc(cv.position||'')}</div></div>${_photoTag('cv-header-photo')}</div></div><div class="cv-doc-body"><div class="cv-sidebar exec-sidebar">${_contactHtml(pi)}${_linksHtml(links)}${_sklsHtml(skls)}${_certsHtml(certs)}${_langsSidebarHtml(langs)}</div><div class="cv-main">${_summaryHtml(cv)}${_jobsHtml(jobs)}${_eduHtml(edus)}</div></div>${cv.footerConsent?`<div class="cv-footer">${esc(cv.footerConsent)}</div>`:''}`;
 }
 
 // ── Timeline ─────────────────────────────
 function renderTimeline(cv, el) {
   el.className = 'cv-doc tl-layout';
   const pi=cv.personalInfo||{}, jobs=cv.jobInfos||[], edus=cv.educations||[], skls=cv.skills||[], certs=cv.certifications||[], langs=cv.languages||[], links=pi.socialMediaLinks||[];
-  const name=[cv.firstName,cv.lastName].filter(Boolean).join(' ');
 
   const piItems=[
-    pi.address?`<div class="tl-pi-item">${_svgPin()}<div><div class="tl-pi-label">Address</div><div class="tl-pi-value">${esc(pi.address)}</div></div></div>`:'',
-    pi.phone?`<div class="tl-pi-item">${_svgPhone()}<div><div class="tl-pi-label">Phone</div><div class="tl-pi-value">${esc(pi.phone)}</div></div></div>`:'',
-    pi.email?`<div class="tl-pi-item">${_svgMail()}<div><div class="tl-pi-label">Email</div><div class="tl-pi-value">${esc(pi.email)}</div></div></div>`:'',
-    ...links.map(l=>`<div class="tl-pi-item">${_svgLink()}<div><div class="tl-pi-label">${esc(l.name||'Link')}</div><div class="tl-pi-value"><a href="${esc(l.link||'#')}" target="_blank" rel="noopener">${esc(l.link||'')}</a></div></div></div>`)
+    pi.address?`<div class="tl-pi-item">${_svgPin()}<div><div class="tl-pi-label">Address</div><div class="tl-pi-value" data-edit="personalInfo.address">${esc(pi.address)}</div></div></div>`:'',
+    pi.phone?`<div class="tl-pi-item">${_svgPhone()}<div><div class="tl-pi-label">Phone</div><div class="tl-pi-value" data-edit="personalInfo.phone">${esc(pi.phone)}</div></div></div>`:'',
+    pi.email?`<div class="tl-pi-item">${_svgMail()}<div><div class="tl-pi-label">Email</div><div class="tl-pi-value" data-edit="personalInfo.email">${esc(pi.email)}</div></div></div>`:'',
+    ...links.map((l,i)=>`<div class="tl-pi-item">${_svgLink()}<div><div class="tl-pi-label" data-edit="personalInfo.socialMediaLinks.${i}.name">${esc(l.name||'Link')}</div><div class="tl-pi-value"><a href="${esc(l.link||'#')}" target="_blank" rel="noopener" data-edit="personalInfo.socialMediaLinks.${i}.link">${esc(l.link||'')}</a></div></div></div>`)
   ].filter(Boolean);
   const piHtml=piItems.length?`<div class="tl-section"><div class="tl-sec-title">Personal Info</div><div class="tl-pi-grid">${piItems.join('')}</div></div>`:'';
 
-  const summaryHtml=cv.summary?`<div class="tl-section"><div class="tl-sec-title">Profile</div><div class="tl-summary">${esc(cv.summary)}</div></div>`:'';
-  const jobsHtml=jobs.length?`<div class="tl-section"><div class="tl-sec-title">Work Experience</div>${jobs.map(j=>{const d=_duties(j);return`<div class="tl-entry"><div class="tl-spine"><div class="tl-dot"></div><div class="tl-line"></div></div><div class="tl-content"><div class="tl-job-top"><div class="tl-job-title">${esc(j.title||j.companyName||'')}</div><div class="tl-period">${esc(_period(j))}</div></div><div class="tl-company">${esc(j.title?j.companyName:'')}</div>${d.length?`<ul class="tl-duties">${d.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}</div></div>`;}).join('')}</div>`:'';
-  const eduHtml=edus.length?`<div class="tl-section"><div class="tl-sec-title">Education</div>${edus.map(e=>`<div class="tl-edu-item"><span class="tl-edu-school">${esc(e.school||'')}</span><span class="tl-edu-period">${[e.from,e.to].filter(Boolean).join(' – ')}</span></div>`).join('')}</div>`:'';
-  const sklsHtml=skls.length?`<div class="tl-section"><div class="tl-sec-title">Skills</div><div class="tl-chips">${skls.map(s=>`<span class="tl-chip">${esc(s.skill||'')}</span>`).join('')}</div></div>`:'';
-  const certsHtml=certs.length?`<div class="tl-section"><div class="tl-sec-title">Certifications</div>${certs.map(c=>`<div class="tl-cert-item"><span class="tl-cert-name">${esc(c.name||'')}</span><span class="tl-cert-meta">${[c.issuer,c.date].filter(Boolean).map(esc).join(' · ')}</span></div>`).join('')}</div>`:'';
+  const summaryHtml=cv.summary?`<div class="tl-section"><div class="tl-sec-title">Profile</div><div class="tl-summary" data-edit="summary">${esc(cv.summary)}</div></div>`:'';
+  const jobsHtml=jobs.length?`<div class="tl-section"><div class="tl-sec-title">Work Experience</div>${jobs.map((j,i)=>{const d=_duties(j);return`<div class="tl-entry"><div class="tl-spine"><div class="tl-dot"></div><div class="tl-line"></div></div><div class="tl-content"><div class="tl-job-top"><div class="tl-job-title" data-edit="jobInfos.${i}.title">${esc(j.title||j.companyName||'')}</div><div class="tl-period">${esc(_period(j))}</div></div><div class="tl-company" data-edit="jobInfos.${i}.companyName">${esc(j.title?j.companyName:'')}</div>${d.length?`<ul class="tl-duties">${d.map((x,k)=>`<li data-edit="jobInfos.${i}.duties.${k}">${esc(x)}</li>`).join('')}</ul>`:''}</div></div>`;}).join('')}</div>`:'';
+  const eduHtml=edus.length?`<div class="tl-section"><div class="tl-sec-title">Education</div>${edus.map((e,i)=>`<div class="tl-edu-item"><span class="tl-edu-school" data-edit="educations.${i}.school">${esc(e.school||'')}</span><span class="tl-edu-period">${[e.from,e.to].filter(Boolean).join(' – ')}</span></div>`).join('')}</div>`:'';
+  const sklsHtml=skls.length?`<div class="tl-section"><div class="tl-sec-title">Skills</div><div class="tl-chips">${skls.map((s,i)=>`<span class="tl-chip" data-edit="skills.${i}.skill">${esc(s.skill||'')}</span>`).join('')}</div></div>`:'';
+  const certsHtml=certs.length?`<div class="tl-section"><div class="tl-sec-title">Certifications</div>${certs.map((c,i)=>`<div class="tl-cert-item"><span class="tl-cert-name" data-edit="certifications.${i}.name">${esc(c.name||'')}</span><span class="tl-cert-meta">${[c.issuer,c.date].filter(Boolean).map(esc).join(' · ')}</span></div>`).join('')}</div>`:'';
 
-  el.innerHTML=`<div class="cv-doc-header"><div class="cv-header-inner"><div class="cv-header-text"><div class="cv-doc-name">${esc(name)}</div><div class="cv-doc-position">${esc(cv.position||'')}</div></div>${_photoTag('cv-header-photo')}</div></div><div class="cv-doc-body"><div class="tl-main">${piHtml}${summaryHtml}${jobsHtml}${eduHtml}${sklsHtml}${certsHtml}${_langsChipsHtml(langs)}</div></div>${cv.footerConsent?`<div class="cv-footer">${esc(cv.footerConsent)}</div>`:''}`;
+  el.innerHTML=`<div class="cv-doc-header"><div class="cv-header-inner"><div class="cv-header-text"><div class="cv-doc-name">${_nameHtml(cv)}</div><div class="cv-doc-position" data-edit="position">${esc(cv.position||'')}</div></div>${_photoTag('cv-header-photo')}</div></div><div class="cv-doc-body"><div class="tl-main">${piHtml}${summaryHtml}${jobsHtml}${eduHtml}${sklsHtml}${certsHtml}${_langsChipsHtml(langs)}</div></div>${cv.footerConsent?`<div class="cv-footer">${esc(cv.footerConsent)}</div>`:''}`;
 }
 
 // ── Lumina ───────────────────────────────
@@ -587,19 +654,7 @@ function renderLumina(cv, el) {
   el.className = 'cv-doc lumina-layout';
   const pi=cv.personalInfo||{}, jobs=cv.jobInfos||[], edus=cv.educations||[], skls=cv.skills||[], certs=cv.certifications||[], langs=cv.languages||[], links=pi.socialMediaLinks||[];
 
-  const contactHtml=(pi.address||pi.phone||pi.email)?`<div class="cv-section"><div class="cv-section-title">Contact</div><div class="cv-contact">
-    ${pi.address?`<div class="cv-contact-item">${_svgPin()}<span>${esc(pi.address)}</span></div>`:''}
-    ${pi.phone?`<div class="cv-contact-item">${_svgPhone()}<span>${esc(pi.phone)}</span></div>`:''}
-    ${pi.email?`<div class="cv-contact-item">${_svgMail()}<span>${esc(pi.email)}</span></div>`:''}
-  </div></div>`:'';
-  const linksHtml=links.length?`<div class="cv-section"><div class="cv-section-title">Links</div><div class="cv-social">${links.map(l=>`<div class="cv-social-entry"><div class="cv-social-name">${esc(l.name||'')}</div><a href="${esc(l.link||'#')}" target="_blank" rel="noopener">${esc(l.link||'')}</a></div>`).join('')}</div></div>`:'';
-  const sklsHtml=skls.length?`<div class="cv-section"><div class="cv-section-title">Skills</div>${skls.map(s=>{const lvl={BEGINNER:1,INTERMEDIATE:2,ADVANCED:3,EXPERT:4,MASTER:5}[s.level]||3;return`<div class="cv-skill"><div class="cv-skill-row"><span class="cv-skill-name">${esc(s.skill||'')}</span><span class="cv-skill-level">${lvl}/5</span></div><div class="cv-skill-bar"><div class="cv-skill-fill" style="width:${lvl*20}%"></div></div></div>`;}).join('')}</div>`:'';
-  const certsHtml=certs.length?`<div class="cv-section"><div class="cv-section-title">Certifications</div>${certs.map(c=>`<div class="cv-cert"><div class="cv-cert-name">${esc(c.name||'')}</div><div class="cv-cert-meta">${[c.issuer,c.date].filter(Boolean).map(esc).join(' · ')}</div></div>`).join('')}</div>`:'';
-  const summaryHtml=cv.summary?`<div class="cv-section"><div class="cv-section-title">Profile</div><div class="cv-summary">${esc(cv.summary)}</div></div>`:'';
-  const jobsHtml=jobs.length?`<div class="cv-section"><div class="cv-section-title">Work Experience</div>${jobs.map(j=>{const d=_duties(j);return`<div class="cv-job"><div class="cv-job-top"><div class="cv-job-title">${esc(j.title||j.companyName||'')}</div><div class="cv-job-period">${esc(_period(j))}</div></div><div class="cv-job-company">${esc(j.title?j.companyName:'')}</div>${d.length?`<ul class="cv-job-duties">${d.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}</div>`;}).join('')}</div>`:'';
-  const eduHtml=edus.length?`<div class="cv-section"><div class="cv-section-title">Education</div>${edus.map(e=>`<div class="cv-edu"><span class="cv-edu-school">${esc(e.school||'')}</span><span class="cv-edu-period">${[e.from,e.to].filter(Boolean).join(' – ')}</span></div>`).join('')}</div>`:'';
-
-  el.innerHTML=`<div class="cv-doc-header"><div class="lumina-header-inner"><div class="lumina-header-left"><div class="lumina-firstname">${esc(cv.firstName||'')}</div><div class="lumina-lastname">${esc(cv.lastName||'')}</div><div class="lumina-header-position">${esc(cv.position||'')}</div></div><img class="lumina-photo" id="cvHeaderPhoto" src="${photoDataUrl||''}" alt="" style="display:${photoDataUrl?'block':'none'}"/></div></div><div class="cv-doc-body"><div class="cv-sidebar lumina-sidebar">${contactHtml}${linksHtml}${sklsHtml}${certsHtml}${_langsSidebarHtml(langs)}</div><div class="cv-main">${summaryHtml}${jobsHtml}${eduHtml}</div></div>${cv.footerConsent?`<div class="cv-footer">${esc(cv.footerConsent)}</div>`:''}`;
+  el.innerHTML=`<div class="cv-doc-header"><div class="lumina-header-inner"><div class="lumina-header-left"><div class="lumina-firstname" data-edit="firstName">${esc(cv.firstName||'')}</div><div class="lumina-lastname" data-edit="lastName">${esc(cv.lastName||'')}</div><div class="lumina-header-position" data-edit="position">${esc(cv.position||'')}</div></div><img class="lumina-photo" id="cvHeaderPhoto" src="${photoDataUrl||''}" alt="" style="display:${photoDataUrl?'block':'none'}"/></div></div><div class="cv-doc-body"><div class="cv-sidebar lumina-sidebar">${_contactHtml(pi)}${_linksHtml(links)}${_sklsHtml(skls)}${_certsHtml(certs)}${_langsSidebarHtml(langs)}</div><div class="cv-main">${_summaryHtml(cv)}${_jobsHtml(jobs)}${_eduHtml(edus)}</div></div>${cv.footerConsent?`<div class="cv-footer">${esc(cv.footerConsent)}</div>`:''}`;
 }
 
 // ══════════════════════════════════════════
@@ -647,6 +702,7 @@ buildFontButtons();
 buildTemplateButtons();
 addSocialItem(); addWorkItem(); addEduItem(); addCertItem(); addLanguageItem();
 wireFieldValidation();
+wireInlineEditing();
 
 fetch('/api/env/features')
   .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })

@@ -8,19 +8,9 @@ import java.util.List;
 
 @Description("""
         Describes user Job info, position, company, when he occupied this position and what duties he had and what skills he was using
-        example:
-        Senior QA Lead                                                                                  2022-08-present
-        Sii Poland, Rzeszów, Polska
-        Company name.
-        - Working with fund management systems
-        - Planning and estimation of testing activities
-        - Designing and developing automated test scripts
-        - Test automation using Java 17, Spring, Playwright, Selenium, Selenium Grid, TestNG, and Cucumber
-        - API testing with Rest Assured
-        - Test management using QTest
-        - Continuous integration and delivery with Jenkins
-        - Managing a team of 4 automation testers
-        - Migrating test framework from Selenium to Playwright
+        Highlight concrete achievements and measurable results accomplished in this role. Prioritize accomplishments over routine responsibilities.
+        Base every statement strictly on the provided facts — do not invent, exaggerate, or fabricate any metrics, outcomes,
+        or experience. If quantitative data is unavailable, describe the achievement qualitatively without inventing numbers
         """)
 @Getter
 @ToString
