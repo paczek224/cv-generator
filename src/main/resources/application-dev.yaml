@@ -1,6 +1,10 @@
 app:
   features:
     sample-data: true
+    watermark: true        # stamp "paczeklab.pl" on the CV (preview + server PDF)
+  pdf:
+    server-side: true      # render the downloadable PDF with headless Chrome
+    pool-size: 1           # number of reusable Chromium workers
 
 langchain4j:
   open-ai:

@@ -195,6 +195,19 @@
       box-shadow:var(--shadow-lg);
       overflow:hidden;
       border:1px solid var(--border);
+      position:relative; /* anchor for .cv-watermark overlay */
+    }
+
+    /* Repeating "paczeklab.pl" watermark, toggled by the app.features.watermark flag */
+    .cv-watermark{
+      position:absolute;
+      inset:0;
+      z-index:60;
+      pointer-events:none;
+      background-repeat:repeat;
+      background-position:center;
+      opacity:.16;
+      background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='170'><text x='150' y='90' transform='rotate(-30 150 90)' fill='%23808080' font-family='Arial, sans-serif' font-size='26' font-weight='700' text-anchor='middle' dominant-baseline='middle'>paczeklab.pl</text></svg>");
     }
 
     .cv-doc-header{background:var(--cv-header);padding:32px 36px 26px;color:white;position:relative}
