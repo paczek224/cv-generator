@@ -82,7 +82,6 @@ let currentFont     = 'Inter';
 let currentTemplate = 'classic';
 let photoDataUrl    = null;
 let _lastCvData     = null;
-let _watermarkOn    = false; // set from /api/env/features
 let _serverPdfOn    = false; // set from /api/env/features
 
 // ══════════════════════════════════════════
@@ -534,23 +533,11 @@ function renderCv(cv) {
   el.removeAttribute('style'); // clear inline theme vars — reapplied by applyAppearanceToCvDoc
   const renders = { classic: renderClassic, executive: renderExecutive, timeline: renderTimeline, lumina: renderLumina };
   (renders[currentTemplate] || renderClassic)(cv, el);
-  if (_watermarkOn) addWatermark(el);
   applyAppearanceToCvDoc();
   applyEditableState(); // keep inline-edit mode active across re-renders (template switch)
   const wrap = document.getElementById('cvResultWrap');
   wrap.classList.add('visible');
   wrap.scrollIntoView({ behavior:'smooth', block:'start' });
-}
-
-// Overlay a repeating "paczeklab.pl" watermark across the document. Enabled via
-// the app.features.watermark flag (see /api/env/features). The text itself lives
-// in the .cv-watermark CSS background so it stays out of the editable content and
-// is reproduced in the printed PDF.
-function addWatermark(el) {
-  const wm = document.createElement('div');
-  wm.className = 'cv-watermark';
-  wm.setAttribute('aria-hidden', 'true');
-  el.appendChild(wm);
 }
 
 // ══════════════════════════════════════════
@@ -759,7 +746,5 @@ fetch('/api/env/features')
   .then(f => {
     if (f.sampleData) document.getElementById('btnLoadSample').style.display = '';
     _serverPdfOn = !!f.serverPdf;
-    _watermarkOn = !!f.watermark;
-    if (_watermarkOn && _lastCvData) renderCv(_lastCvData); // re-render if a CV is already shown
   })
   .catch(err => console.warn('[env/features]', err));
