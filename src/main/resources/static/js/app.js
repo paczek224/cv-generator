@@ -82,6 +82,7 @@ let currentFont     = 'Inter';
 let currentTemplate = 'classic';
 let photoDataUrl    = null;
 let _lastCvData     = null;
+let _serverPdfOn    = false; // set from /api/env/features
 
 // ══════════════════════════════════════════
 //  THEME & FONT APPLICATION
@@ -368,48 +369,84 @@ function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').r
 // ══════════════════════════════════════════
 //  PDF GENERATION
 // ══════════════════════════════════════════
+// Measure the doc AT the real print width (210mm) so the single-page height
+// matches what will actually be printed. On screen the doc is narrower (~740px),
+// so text wraps to a different (taller) height than at print width.
+function _computeHeightMm(cvDoc) {
+  const PAGE_W_PX = 210 / 25.4 * 96;   // 210mm in CSS px @96dpi ≈ 793.7
+  const PX_TO_MM  = 25.4 / 96;         // exact px → mm conversion
+  const SAFETY_MM = 5;                 // tiny buffer for sub-pixel / print-dialog margins
+  const prevWidth = cvDoc.style.width;
+  cvDoc.style.width = PAGE_W_PX + 'px';                            // reflow at print width
+  const heightMm = Math.ceil(cvDoc.getBoundingClientRect().height) * PX_TO_MM + SAFETY_MM;
+  cvDoc.style.width = prevWidth;                                  // restore (no flicker)
+  return heightMm;
+}
+
+// Fallback path: print via the browser's own print dialog (no server needed).
+function _clientPrint(cvDoc, heightMm) {
+  const sidebar = cvDoc.querySelector('.cv-sidebar');
+  let ps = document.getElementById('_print_page_size');
+  if (!ps) { ps = document.createElement('style'); ps.id = '_print_page_size'; document.head.appendChild(ps); }
+  const sidebarCss = sidebar
+      ? `.cv-doc-body{background:linear-gradient(to right,${getComputedStyle(sidebar).backgroundColor} ${sidebar.offsetWidth}px,white ${sidebar.offsetWidth}px)!important}.cv-sidebar{background:transparent!important}`
+      : '';
+  ps.textContent = `@media print{`
+      + `@page{size:210mm ${heightMm}mm;margin:0}`
+      + `html,body{margin:0!important;padding:0!important;background:#fff!important}`
+      + `.container{margin:0!important;padding:0!important;max-width:none!important}`
+      + `.cv-result-wrap{margin:0!important;padding:0!important}`
+      + `.cv-doc{margin:0!important}`
+      + sidebarCss
+      + `}`;
+  window.print();
+}
+
+// Server path: send the rendered CV markup to headless Chrome, which returns a
+// PDF identical to the preview (and stamps the watermark server-side).
+async function _downloadServerPdf(firstName, lastName, cvDoc, heightMm) {
+  const res = await fetch('/api/cv/pdf', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ html: cvDoc.outerHTML, heightMm, font: currentFont })
+  });
+  if (!res.ok) throw new Error((await res.text()) || `HTTP ${res.status}`);
+  const blob = await res.blob();
+  const url  = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = (`CV_${firstName || ''}_${lastName || ''}`.trim().replace(/\s+/g, '_') || 'CV') + '.pdf';
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+
 function enablePdfButton(firstName, lastName) {
   const dlBtn = document.getElementById('btnDownloadPdf');
   dlBtn.disabled = false;
   dlBtn.style.opacity = '';
   dlBtn.style.cursor  = '';
   dlBtn.onclick = async () => {
-    const cvDoc   = document.getElementById('cvDoc');
-    const sidebar = cvDoc.querySelector('.cv-sidebar');
+    const cvDoc = document.getElementById('cvDoc');
 
     // Wait for web fonts to finish loading. Otherwise we measure with a fallback
     // font (usually shorter), the page comes out too short, and the footer spills
-    // onto a second page once the real font renders at print time.
+    // onto a second page once the real font renders.
     if (document.fonts && document.fonts.ready) {
       try { await document.fonts.ready; } catch (e) {}
     }
 
-    // The printed page is 210mm wide, but on screen the doc is narrower (~740px),
-    // so text wraps to a different (taller) height than it will when printed.
-    // Measure the doc AT the real print width so the page height matches.
-    const PAGE_W_PX = 210 / 25.4 * 96;   // 210mm in CSS px @96dpi ≈ 793.7
-    const PX_TO_MM  = 25.4 / 96;         // exact px → mm conversion
-    const SAFETY_MM = 5;                 // tiny buffer for sub-pixel / print-dialog margins
+    const heightMm = _computeHeightMm(cvDoc);
 
-    const prevWidth = cvDoc.style.width;
-    cvDoc.style.width = PAGE_W_PX + 'px';                            // reflow at print width
-    const heightMm = Math.ceil(cvDoc.getBoundingClientRect().height) * PX_TO_MM + SAFETY_MM;
-    cvDoc.style.width = prevWidth;                                  // restore (no flicker)
-
-    let ps = document.getElementById('_print_page_size');
-    if (!ps) { ps = document.createElement('style'); ps.id = '_print_page_size'; document.head.appendChild(ps); }
-    const sidebarCss = sidebar
-        ? `.cv-doc-body{background:linear-gradient(to right,${getComputedStyle(sidebar).backgroundColor} ${sidebar.offsetWidth}px,white ${sidebar.offsetWidth}px)!important}.cv-sidebar{background:transparent!important}`
-        : '';
-    ps.textContent = `@media print{`
-        + `@page{size:210mm ${heightMm}mm;margin:0}`
-        + `html,body{margin:0!important;padding:0!important;background:#fff!important}`
-        + `.container{margin:0!important;padding:0!important;max-width:none!important}`
-        + `.cv-result-wrap{margin:0!important;padding:0!important}`
-        + `.cv-doc{margin:0!important}`
-        + sidebarCss
-        + `}`;
-    window.print();
+    if (_serverPdfOn) {
+      const label = dlBtn.innerHTML;
+      dlBtn.disabled = true; dlBtn.style.opacity = '.6'; dlBtn.style.cursor = 'wait';
+      dlBtn.textContent = 'Preparing PDF…';
+      try { await _downloadServerPdf(firstName, lastName, cvDoc, heightMm); }
+      catch (err) { showError(`PDF download failed: ${err.message}`); }
+      finally { dlBtn.disabled = false; dlBtn.style.opacity = ''; dlBtn.style.cursor = ''; dlBtn.innerHTML = label; }
+    } else {
+      _clientPrint(cvDoc, heightMm);
+    }
   };
 }
 
@@ -706,5 +743,8 @@ wireInlineEditing();
 
 fetch('/api/env/features')
   .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
-  .then(f => { if (f.sampleData) document.getElementById('btnLoadSample').style.display = ''; })
+  .then(f => {
+    if (f.sampleData) document.getElementById('btnLoadSample').style.display = '';
+    _serverPdfOn = !!f.serverPdf;
+  })
   .catch(err => console.warn('[env/features]', err));

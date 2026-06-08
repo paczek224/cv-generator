@@ -14,8 +14,18 @@ public class EnvController {
     @Value("${app.features.sample-data:false}")
     private boolean sampleDataEnabled;
 
+    @Value("${app.features.watermark:false}")
+    private boolean watermarkEnabled;
+
+    @Value("${app.pdf.server-side:false}")
+    private boolean serverPdfEnabled;
+
     @GetMapping("/features")
     public Map<String, Boolean> features() {
-        return Map.of("sampleData", sampleDataEnabled);
+        return Map.of(
+                "sampleData", sampleDataEnabled,
+                "watermark", watermarkEnabled,
+                "serverPdf", serverPdfEnabled
+        );
     }
 }

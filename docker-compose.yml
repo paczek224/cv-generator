@@ -5,6 +5,7 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=prod
       - API_KEY=${API_KEY}
+      - WATERMARK=false
     expose:
       - "8080"        # widoczne TYLKO w sieci dockera, nie na świat
 

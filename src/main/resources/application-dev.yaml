@@ -1,6 +1,10 @@
 app:
   features:
     sample-data: true
+    watermark: ${WATERMARK:true}
+  pdf:
+    server-side: true
+    pool-size: 1
 
 langchain4j:
   open-ai:
