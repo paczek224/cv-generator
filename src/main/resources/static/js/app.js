@@ -575,8 +575,20 @@ function applyEditableState() {
 
 function toggleEdit() {
   _editing = !_editing;
+  if (!_editing) cleanupEmptyDuties(); // drop blank bullets left behind on exit
   applyEditableState();
   if (_editing) document.querySelector('#cvDoc [data-edit]')?.focus();
+}
+
+// Remove empty <li> bullets from every duties list (and resync), so a stray blank
+// line created while editing doesn't leave a lone ▸ marker in the CV or the PDF.
+function cleanupEmptyDuties() {
+  const doc = document.getElementById('cvDoc');
+  if (!doc) return;
+  doc.querySelectorAll('[data-duties]').forEach(ul => {
+    ul.querySelectorAll('li').forEach(li => { if (!_liText(li).trim()) li.remove(); });
+    syncDuties(ul);
+  });
 }
 
 // Persist inline edits back into _lastCvData so they survive theme/template
@@ -591,12 +603,70 @@ function wireInlineEditing() {
   });
   // While editing, a click on a link should place the caret, not navigate away.
   doc.addEventListener('click', e => { if (_editing && e.target.closest('a')) e.preventDefault(); });
-  // Enter ends editing on single-line fields; only the multi-line Profile keeps newlines.
   doc.addEventListener('keydown', e => {
-    if (!_editing || e.key !== 'Enter' || e.shiftKey) return;
+    if (!_editing || e.shiftKey) return;
+    const li = e.target.closest('li[data-edit]');
+    const ul = li && li.closest('[data-duties]');
+
+    // Inside a duties list: Enter starts a brand-new bullet (a real <li>, so it
+    // inherits the ▸ marker), Backspace at the start of a line merges it upward.
+    if (ul && e.key === 'Enter') { e.preventDefault(); splitDutyAtCaret(li, ul); return; }
+    if (ul && e.key === 'Backspace' && window.getSelection().isCollapsed && caretOffsetWithin(li) === 0) {
+      const prev = li.previousElementSibling;
+      if (prev && prev.matches('li')) { e.preventDefault(); mergeDutyUp(li, prev, ul); return; }
+    }
+    if (e.key !== 'Enter') return;
+    // Other fields: Enter ends editing; only the multi-line Profile keeps newlines.
     const t = e.target.closest('[data-edit]');
     if (t && t.dataset.edit !== 'summary') { e.preventDefault(); t.blur(); }
   });
+}
+
+// ── Duties list editing (add / remove bullets that keep the ▸ marker) ──
+// Character offset of the caret from the start of `el` (collapsed selection).
+function caretOffsetWithin(el) {
+  const sel = window.getSelection();
+  if (!sel || !sel.rangeCount) return el.innerText.length;
+  const pre = sel.getRangeAt(0).cloneRange();
+  pre.selectNodeContents(el);
+  pre.setEnd(sel.getRangeAt(0).endContainer, sel.getRangeAt(0).endOffset);
+  return pre.toString().length;
+}
+function _liText(li) { return li.innerText.replace(/ /g, ' '); }
+function placeCaret(li, offset) {
+  const node = li.firstChild || li;
+  const max = node.nodeType === 3 ? node.length : node.childNodes.length;
+  const range = document.createRange();
+  range.setStart(node, Math.min(offset, max));
+  range.collapse(true);
+  const sel = window.getSelection();
+  sel.removeAllRanges(); sel.addRange(range);
+}
+// Re-read every <li> under `ul`, write the array back to _lastCvData and renumber
+// the data-edit indices so later typing still persists to the right slot.
+function syncDuties(ul) {
+  const base = ul.dataset.duties; // e.g. "jobInfos.0"
+  const lis = [...ul.querySelectorAll('li')];
+  setPath(_lastCvData, base + '.duties', lis.map(_liText).map(s => s.trim()));
+  lis.forEach((li, k) => { li.dataset.edit = `${base}.duties.${k}`; });
+}
+function splitDutyAtCaret(li, ul) {
+  const text = _liText(li), pos = caretOffsetWithin(li);
+  li.textContent = text.slice(0, pos);
+  const nli = document.createElement('li');
+  nli.className = li.className;
+  nli.contentEditable = 'true';
+  nli.textContent = text.slice(pos);
+  li.after(nli);
+  syncDuties(ul);
+  nli.focus(); placeCaret(nli, 0);
+}
+function mergeDutyUp(li, prev, ul) {
+  const at = _liText(prev).length;
+  prev.textContent = _liText(prev) + _liText(li);
+  li.remove();
+  syncDuties(ul);
+  prev.focus(); placeCaret(prev, at);
 }
 
 // shared helpers
@@ -639,7 +709,7 @@ function _summaryHtml(cv) {
   return cv.summary?`<div class="cv-section"><div class="cv-section-title">Profile</div><div class="cv-summary" data-edit="summary">${esc(cv.summary)}</div></div>`:'';
 }
 function _jobsHtml(jobs) {
-  return jobs.length?`<div class="cv-section"><div class="cv-section-title">Work Experience</div>${jobs.map((j,i)=>{const d=_duties(j);return`<div class="cv-job"><div class="cv-job-top"><div class="cv-job-title" data-edit="jobInfos.${i}.title">${esc(j.title||j.companyName||'')}</div><div class="cv-job-period">${esc(_period(j))}</div></div><div class="cv-job-company" data-edit="jobInfos.${i}.companyName">${esc(j.title?j.companyName:'')}</div>${d.length?`<ul class="cv-job-duties">${d.map((x,k)=>`<li data-edit="jobInfos.${i}.duties.${k}">${esc(x)}</li>`).join('')}</ul>`:''}</div>`;}).join('')}</div>`:'';
+  return jobs.length?`<div class="cv-section"><div class="cv-section-title">Work Experience</div>${jobs.map((j,i)=>{const d=_duties(j);return`<div class="cv-job"><div class="cv-job-top"><div class="cv-job-title" data-edit="jobInfos.${i}.title">${esc(j.title||j.companyName||'')}</div><div class="cv-job-period">${esc(_period(j))}</div></div><div class="cv-job-company" data-edit="jobInfos.${i}.companyName">${esc(j.title?j.companyName:'')}</div>${d.length?`<ul class="cv-job-duties" data-duties="jobInfos.${i}">${d.map((x,k)=>`<li data-edit="jobInfos.${i}.duties.${k}">${esc(x)}</li>`).join('')}</ul>`:''}</div>`;}).join('')}</div>`:'';
 }
 function _eduHtml(edus) {
   return edus.length?`<div class="cv-section"><div class="cv-section-title">Education</div>${edus.map((e,i)=>`<div class="cv-edu"><span class="cv-edu-school" data-edit="educations.${i}.school">${esc(e.school||'')}</span><span class="cv-edu-period">${[e.from,e.to].filter(Boolean).join(' – ')}</span></div>`).join('')}</div>`:'';
@@ -678,7 +748,7 @@ function renderTimeline(cv, el) {
   const piHtml=piItems.length?`<div class="tl-section"><div class="tl-sec-title">Personal Info</div><div class="tl-pi-grid">${piItems.join('')}</div></div>`:'';
 
   const summaryHtml=cv.summary?`<div class="tl-section"><div class="tl-sec-title">Profile</div><div class="tl-summary" data-edit="summary">${esc(cv.summary)}</div></div>`:'';
-  const jobsHtml=jobs.length?`<div class="tl-section"><div class="tl-sec-title">Work Experience</div>${jobs.map((j,i)=>{const d=_duties(j);return`<div class="tl-entry"><div class="tl-spine"><div class="tl-dot"></div><div class="tl-line"></div></div><div class="tl-content"><div class="tl-job-top"><div class="tl-job-title" data-edit="jobInfos.${i}.title">${esc(j.title||j.companyName||'')}</div><div class="tl-period">${esc(_period(j))}</div></div><div class="tl-company" data-edit="jobInfos.${i}.companyName">${esc(j.title?j.companyName:'')}</div>${d.length?`<ul class="tl-duties">${d.map((x,k)=>`<li data-edit="jobInfos.${i}.duties.${k}">${esc(x)}</li>`).join('')}</ul>`:''}</div></div>`;}).join('')}</div>`:'';
+  const jobsHtml=jobs.length?`<div class="tl-section"><div class="tl-sec-title">Work Experience</div>${jobs.map((j,i)=>{const d=_duties(j);return`<div class="tl-entry"><div class="tl-spine"><div class="tl-dot"></div><div class="tl-line"></div></div><div class="tl-content"><div class="tl-job-top"><div class="tl-job-title" data-edit="jobInfos.${i}.title">${esc(j.title||j.companyName||'')}</div><div class="tl-period">${esc(_period(j))}</div></div><div class="tl-company" data-edit="jobInfos.${i}.companyName">${esc(j.title?j.companyName:'')}</div>${d.length?`<ul class="tl-duties" data-duties="jobInfos.${i}">${d.map((x,k)=>`<li data-edit="jobInfos.${i}.duties.${k}">${esc(x)}</li>`).join('')}</ul>`:''}</div></div>`;}).join('')}</div>`:'';
   const eduHtml=edus.length?`<div class="tl-section"><div class="tl-sec-title">Education</div>${edus.map((e,i)=>`<div class="tl-edu-item"><span class="tl-edu-school" data-edit="educations.${i}.school">${esc(e.school||'')}</span><span class="tl-edu-period">${[e.from,e.to].filter(Boolean).join(' – ')}</span></div>`).join('')}</div>`:'';
   const sklsHtml=skls.length?`<div class="tl-section"><div class="tl-sec-title">Skills</div><div class="tl-chips">${skls.map((s,i)=>`<span class="tl-chip" data-edit="skills.${i}.skill">${esc(s.skill||'')}</span>`).join('')}</div></div>`:'';
   const certsHtml=certs.length?`<div class="tl-section"><div class="tl-sec-title">Certifications</div>${certs.map((c,i)=>`<div class="tl-cert-item"><span class="tl-cert-name" data-edit="certifications.${i}.name">${esc(c.name||'')}</span><span class="tl-cert-meta">${[c.issuer,c.date].filter(Boolean).map(esc).join(' · ')}</span></div>`).join('')}</div>`:'';
