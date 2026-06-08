@@ -56,7 +56,8 @@ cv-generator/
 │       └── resources/
 │           ├── application.yaml
 │           └── static/
-│               ├── index.html                    # Single-page UI (form + live preview)
+│               ├── index.html                    # paczeklab landing page (EN/PL) → links to generator
+│               ├── generator.html                 # Single-page CV UI (form + live preview)
 │               ├── css/styles.css                # All styles (UI + 4 CV templates)
 │               └── js/app.js                     # All client-side logic
 ├── pom.xml

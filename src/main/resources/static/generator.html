@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CV AI Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Raleway:wght@300;400;500;600;700&family=Lato:wght@300;400;700&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/css/styles.css"/>
+</head>
+<body>
+
+<header class="app-header">
+  <h1>CV AI Generator</h1>
+  <p>Fill in your details — AI will craft a professional CV for you</p>
+  <div class="header-actions">
+    <a href="/" class="btn-sample" data-testid="link-home" style="text-decoration:none;display:inline-block">← paczeklab home</a>
+    <button id="btnLoadSample" data-testid="btn-load-sample" class="btn-sample" onclick="loadSampleData()" style="display:none">Load sample data</button>
+  </div>
+</header>
+
+<div class="container">
+  <div class="error-box" id="errorBox">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;flex-shrink:0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <span id="errorMsg"></span>
+  </div>
+
+  <form id="cvForm" data-testid="form-cv" onsubmit="handleSubmit(event)" novalidate>
+
+    <!-- Personal Info -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>
+        <div><div class="card-title">Personal Information</div><div class="card-subtitle">Name, contact details and position</div></div>
+      </div>
+      <div class="field-group">
+        <div class="field"><label>First Name <span class="req">*</span></label><input type="text" id="firstName" data-testid="input-first-name" placeholder="Enter your first name, e.g. Jan" required/></div>
+        <div class="field"><label>Last Name <span class="req">*</span></label><input type="text" id="lastName" data-testid="input-last-name" placeholder="Enter your last name, e.g. Kowalski" required/></div>
+        <div class="field full"><label>Current / Desired Position <span class="req">*</span></label><input type="text" id="position" data-testid="input-position" placeholder="What is your current or target role? e.g. Senior Software Engineer" required/></div>
+        <div class="field full"><label>Address</label><input type="text" id="address" data-testid="input-address" placeholder="Your city and country, e.g. Warsaw, Poland"/></div>
+        <div class="field"><label>Phone</label><input type="tel" id="phone" data-testid="input-phone" placeholder="Your phone number, e.g. +48 123 456 789"/><span class="field-error" id="phoneError" data-testid="error-phone"></span></div>
+        <div class="field"><label>Email</label><input type="email" id="email" data-testid="input-email" placeholder="Your email address, e.g. you@example.com"/><span class="field-error" id="emailError" data-testid="error-email"></span></div>
+      </div>
+    </div>
+
+    <!-- Social Links -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg></div>
+        <div><div class="card-title">Social Media &amp; Links</div><div class="card-subtitle">LinkedIn, GitHub, portfolio, etc.</div></div>
+      </div>
+      <div id="socialList" data-testid="social-list"></div>
+      <button type="button" id="btnAddSocialLink" data-testid="btn-add-social-link" class="btn-add" onclick="addSocialItem()"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" style="width:16px;height:16px;stroke:currentColor"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Link</button>
+    </div>
+
+    <!-- Work Experience -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg></div>
+        <div><div class="card-title">Work Experience</div><div class="card-subtitle">Most recent first</div></div>
+      </div>
+      <div id="workList" data-testid="work-list"></div>
+      <button type="button" id="btnAddWork" data-testid="btn-add-work" class="btn-add" onclick="addWorkItem()"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" style="width:16px;height:16px;stroke:currentColor"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Position</button>
+    </div>
+
+    <!-- Education -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg></div>
+        <div><div class="card-title">Education</div><div class="card-subtitle">Universities, colleges, courses</div></div>
+      </div>
+      <div id="eduList" data-testid="edu-list"></div>
+      <button type="button" id="btnAddEducation" data-testid="btn-add-education" class="btn-add" onclick="addEduItem()"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" style="width:16px;height:16px;stroke:currentColor"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Education</button>
+    </div>
+
+    <!-- Skills -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div>
+        <div><div class="card-title">Skills</div><div class="card-subtitle">One skill per line</div></div>
+      </div>
+      <div class="field">
+        <textarea id="skills" data-testid="textarea-skills" rows="6" placeholder="List your skills with levels — rough notes are fine, AI will clean everything up.&#10;e.g.:&#10;Java EXPERT&#10;Spring Boot ADVANCED&#10;Docker INTERMEDIATE&#10;&#10;Levels: 1–5 or BEGINNER / INTERMEDIATE / ADVANCED / EXPERT / MASTER"></textarea>
+      </div>
+    </div>
+
+    <!-- Certifications -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg></div>
+        <div><div class="card-title">Certifications</div><div class="card-subtitle">Professional certificates and courses</div></div>
+      </div>
+      <div id="certList" data-testid="cert-list"></div>
+      <button type="button" id="btnAddCert" data-testid="btn-add-cert" class="btn-add" onclick="addCertItem()"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" style="width:16px;height:16px;stroke:currentColor"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Certificate</button>
+    </div>
+
+    <!-- Languages -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M5 8l6 6"/><path d="M4 14l6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="M22 22l-5-10-5 10"/><path d="M14 18h6"/></svg></div>
+        <div><div class="card-title">Languages</div><div class="card-subtitle">Spoken languages and proficiency levels</div></div>
+      </div>
+      <div id="langList" data-testid="lang-list"></div>
+      <button type="button" id="btnAddLanguage" data-testid="btn-add-language" class="btn-add" onclick="addLanguageItem()"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" style="width:16px;height:16px;stroke:currentColor"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Language</button>
+    </div>
+
+    <!-- Appearance -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/><line x1="2" y1="12" x2="22" y2="12"/></svg></div>
+        <div><div class="card-title">Appearance</div><div class="card-subtitle">Photo, font and color theme</div></div>
+      </div>
+
+      <!-- Photo -->
+      <div class="appear-section">
+        <span class="appear-label">Profile Photo</span>
+        <div class="photo-upload" id="photoUpload">
+          <div class="photo-thumb" id="photoThumb">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+            <img id="photoThumbImg" src="" alt=""/>
+          </div>
+          <div class="photo-upload-text">
+            <strong>Click to upload photo</strong>
+            <span>JPG, PNG or WebP — will appear in CV header</span>
+          </div>
+          <button type="button" class="photo-remove" id="photoRemove" data-testid="btn-photo-remove" onclick="removePhoto(event)">Remove</button>
+          <input type="file" id="photoFile" data-testid="input-photo-file" accept="image/*" onchange="handlePhoto(this)"/>
+        </div>
+      </div>
+
+      <!-- Font -->
+      <div class="appear-section">
+        <span class="appear-label">Font Family</span>
+        <div class="font-options" id="fontOptions"></div>
+      </div>
+
+      <!-- Theme -->
+      <div class="appear-section">
+        <span class="appear-label">Color Theme</span>
+        <div class="theme-options" id="themeOptions"></div>
+      </div>
+
+      <!-- Template -->
+      <div class="appear-section">
+        <span class="appear-label">CV Template</span>
+        <div class="tmpl-options" id="tmplOptions"></div>
+      </div>
+    </div>
+
+    <!-- Generate Options -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 19.07a10 10 0 010-14.14"/></svg></div>
+        <div><div class="card-title">Generate Options</div><div class="card-subtitle">Tailor the AI output to your target role</div></div>
+      </div>
+      <div class="field-group">
+        <div class="field full"><label>Target Job / Position <span class="req">*</span></label><input type="text" id="jobOffer" data-testid="input-job-offer" placeholder="What role are you applying for? e.g. Senior Test Automation Engineer — AI will tailor your CV to this position" required/></div>
+        <div class="field">
+          <label>Output Language</label>
+          <select id="language" data-testid="select-language">
+            <option value="eng">English</option>
+            <option value="pol">Polish</option>
+            <option value="deu">German</option>
+            <option value="fra">French</option>
+            <option value="esp">Spanish</option>
+          </select>
+        </div>
+        <div class="field" style="justify-content:flex-end;padding-bottom:2px">
+          <label>Enhance with AI</label>
+          <div class="toggle-row" style="margin-top:4px">
+            <label class="toggle"><input type="checkbox" id="enhanceCv" data-testid="checkbox-enhance-cv" checked/><div class="toggle-track"><div class="toggle-thumb"></div></div></label>
+            <span class="toggle-label">Let AI improve phrasing</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button type="submit" class="btn-generate" id="generateBtn" data-testid="btn-generate">✨ Generate My CV</button>
+  </form>
+
+  <div class="loading-box" id="loadingBox">
+    <div class="spinner"></div>
+    <div class="loading-text"><strong>AI is crafting your CV…</strong>This may take up to 30 seconds.</div>
+  </div>
+
+  <div class="cv-result-wrap" id="cvResultWrap">
+    <div class="cv-result-actions">
+      <button id="btnEditForm" data-testid="btn-edit-form" class="btn-secondary" onclick="document.getElementById('cvForm').scrollIntoView({behavior:'smooth'})">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>Edit Form
+      </button>
+      <button id="btnEditText" data-testid="btn-edit-text" class="btn-secondary" onclick="toggleEdit()">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>Edit text
+      </button>
+      <span class="edit-hint" id="editHint">Click any text in the CV to edit it</span>
+      <button class="btn-secondary" id="btnDownloadPdf" data-testid="btn-download-pdf" disabled style="opacity:.45;cursor:not-allowed">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download PDF
+      </button>
+    </div>
+    <div class="cv-doc" id="cvDoc"></div>
+  </div>
+</div>
+
+<script src="/js/app.js"></script>
+</body>
+</html>
