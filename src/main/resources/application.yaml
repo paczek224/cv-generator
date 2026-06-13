@@ -4,8 +4,18 @@ spring:
   application:
     name: cv-ai-generator
   profiles:
-    active: prod
+    active: dev
+
 logging:
   level:
     root: WARN
-    com.example.cvaigenerator: INFO
+    com.paczek224.cvaigenerator: INFO
+
+playwright:
+  base-url: http://localhost:8080
+  browser: chromium
+  browserWidth: 1920
+  browserHeight: 1080
+  headless: true
+  timeoutInMs: 8000
+  longTimeoutInMs: 20000
