@@ -1,9 +1,66 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pl">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>paczeklab — tools that solve everyday problems</title>
+  <title>paczeklab — Darmowy generator CV online z AI | Stwórz CV w kilka sekund</title>
+  <meta name="description" content="Stwórz profesjonalne CV w kilka sekund z darmowym generatorem CV online opartym na AI. Bez zakładania konta, za darmo. paczeklab tworzy proste narzędzia do codziennych zadań."/>
+  <link rel="canonical" href="https://paczeklab.pl/"/>
+  <link rel="alternate" hreflang="pl" href="https://paczeklab.pl/"/>
+  <link rel="alternate" hreflang="en" href="https://paczeklab.pl/?lang=en"/>
+  <link rel="alternate" hreflang="x-default" href="https://paczeklab.pl/"/>
+
+  <!-- Open Graph / social sharing -->
+  <meta property="og:type" content="website"/>
+  <meta property="og:url" content="https://paczeklab.pl/"/>
+  <meta property="og:site_name" content="paczeklab"/>
+  <meta property="og:locale" content="pl_PL"/>
+  <meta property="og:locale:alternate" content="en_US"/>
+  <meta property="og:title" content="paczeklab — Darmowy generator CV online z AI"/>
+  <meta property="og:description" content="Stwórz profesjonalne CV w kilka sekund z darmowym generatorem CV online opartym na AI. Bez zakładania konta, za darmo."/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="paczeklab — Darmowy generator CV online z AI"/>
+  <meta name="twitter:description" content="Stwórz profesjonalne CV w kilka sekund z darmowym generatorem CV online opartym na AI. Bez zakładania konta, za darmo."/>
+
+  <!-- Structured data (schema.org) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://paczeklab.pl/#organization",
+        "name": "paczeklab",
+        "url": "https://paczeklab.pl/",
+        "description": "paczeklab tworzy proste i sprytne narzędzia, które pomagają rozwiązywać codzienne problemy."
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://paczeklab.pl/#website",
+        "url": "https://paczeklab.pl/",
+        "name": "paczeklab",
+        "inLanguage": ["pl", "en"],
+        "publisher": { "@id": "https://paczeklab.pl/#organization" }
+      },
+      {
+        "@type": "WebApplication",
+        "name": "Generator CV z AI — paczeklab",
+        "url": "https://paczeklab.pl/generator.html",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web",
+        "inLanguage": ["pl", "en"],
+        "description": "Darmowy generator CV online oparty na AI. Stwórz profesjonalne CV gotowe do pobrania w PDF w kilka sekund, bez zakładania konta.",
+        "publisher": { "@id": "https://paczeklab.pl/#organization" },
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "PLN"
+        }
+      }
+    ]
+  }
+  </script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   <style>
@@ -121,21 +178,21 @@
 </header>
 
 <main class="hero">
-  <span class="eyebrow"><span class="dot"></span><span data-i18n="eyebrow">paczeklab · everyday tools</span></span>
-  <h1 data-i18n="title"></h1>
-  <p data-i18n="lead"></p>
+  <span class="eyebrow"><span class="dot"></span><span data-i18n="eyebrow">paczeklab · narzędzia na co dzień</span></span>
+  <h1 data-i18n="title">Witaj w <span class="grad">paczeklab</span></h1>
+  <p data-i18n="lead">paczeklab tworzy proste i sprytne narzędzia, które pomagają ludziom rozwiązywać codzienne problemy — szybko i bez zbędnych komplikacji. Pierwsze z nich napisze za Ciebie dopracowane, profesjonalne CV w kilka sekund.</p>
 
   <div class="cta-wrap">
     <a class="cta" href="/generator.html">
-      <span data-i18n="cta">Generate CV</span>
+      <span data-i18n="cta">Wygeneruj CV</span>
       <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
     </a>
   </div>
-  <p class="cta-sub" data-i18n="ctaSub"></p>
+  <p class="cta-sub" data-i18n="ctaSub">Za darmo · bez zakładania konta</p>
 </main>
 
 <footer class="foot">
-  <span data-i18n="foot"></span>
+  <span data-i18n="foot">© 2026 paczeklab — narzędzia, które ułatwiają codzienność.</span>
 </footer>
 
 <script>
@@ -146,7 +203,9 @@
       lead:    'paczeklab builds simple, smart tools that help people solve everyday problems — fast and without the hassle. Our first one writes a polished, professional CV for you in seconds.',
       cta:     'Generate CV',
       ctaSub:  'Free to use · no sign-up required',
-      foot:    '© 2026 paczeklab — tools that make everyday life easier.'
+      foot:    '© 2026 paczeklab — tools that make everyday life easier.',
+      docTitle:    'paczeklab — Free AI CV generator online | Build a CV in seconds',
+      metaDesc:    'Build a professional CV in seconds with a free AI-powered CV generator online. No sign-up, free to use. paczeklab makes simple tools for everyday tasks.'
     },
     pl: {
       eyebrow: 'paczeklab · narzędzia na co dzień',
@@ -154,24 +213,31 @@
       lead:    'paczeklab tworzy proste i sprytne narzędzia, które pomagają ludziom rozwiązywać codzienne problemy — szybko i bez zbędnych komplikacji. Pierwsze z nich napisze za Ciebie dopracowane, profesjonalne CV w kilka sekund.',
       cta:     'Wygeneruj CV',
       ctaSub:  'Za darmo · bez zakładania konta',
-      foot:    '© 2026 paczeklab — narzędzia, które ułatwiają codzienność.'
+      foot:    '© 2026 paczeklab — narzędzia, które ułatwiają codzienność.',
+      docTitle:    'paczeklab — Darmowy generator CV online z AI | Stwórz CV w kilka sekund',
+      metaDesc:    'Stwórz profesjonalne CV w kilka sekund z darmowym generatorem CV online opartym na AI. Bez zakładania konta, za darmo. paczeklab tworzy proste narzędzia do codziennych zadań.'
     }
   };
 
   function applyLang(lang) {
-    const dict = I18N[lang] || I18N.en;
+    const dict = I18N[lang] || I18N.pl;
     document.documentElement.lang = lang;
     document.querySelectorAll('[data-i18n]').forEach(el => {
       el.innerHTML = dict[el.dataset.i18n] ?? el.innerHTML;
     });
+    if (dict.docTitle) document.title = dict.docTitle;
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc && dict.metaDesc) metaDesc.setAttribute('content', dict.metaDesc);
     try { localStorage.setItem('paczeklab.lang', lang); } catch (e) {}
   }
 
   const select = document.getElementById('langSelect');
-  // Restore last choice, otherwise fall back to the browser language.
-  let initial = 'en';
-  try { initial = localStorage.getItem('paczeklab.lang'); } catch (e) {}
-  if (!initial) initial = (navigator.language || 'en').toLowerCase().startsWith('pl') ? 'pl' : 'en';
+  // Priority: explicit ?lang= query (used by hreflang links) → saved choice → browser language → Polish default.
+  let initial = null;
+  const urlLang = new URLSearchParams(location.search).get('lang');
+  if (urlLang === 'pl' || urlLang === 'en') initial = urlLang;
+  if (!initial) { try { initial = localStorage.getItem('paczeklab.lang'); } catch (e) {} }
+  if (!initial) initial = (navigator.language || 'pl').toLowerCase().startsWith('en') ? 'en' : 'pl';
   select.value = initial;
   applyLang(initial);
 
