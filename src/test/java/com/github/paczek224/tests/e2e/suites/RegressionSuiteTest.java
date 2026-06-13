@@ -10,5 +10,6 @@ import org.junit.platform.suite.api.Suite;
 @IncludeEngines("cucumber")
 @SelectClasspathResource("features")
 @ConfigurationParameter(key = Constants.GLUE_PROPERTY_NAME, value = "com.github.paczek224.tests.e2e")
+@ConfigurationParameter(key = Constants.PLUGIN_PROPERTY_NAME, value = "io.qameta.allure.cucumber7jvm.AllureCucumber7Jvm")
 public class RegressionSuiteTest {
 }
