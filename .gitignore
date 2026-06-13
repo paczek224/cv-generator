@@ -35,3 +35,4 @@ build/
 
 ### tests ###
 allure-results
+.allure

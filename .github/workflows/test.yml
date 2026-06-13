@@ -7,11 +7,17 @@ permissions:
 
 jobs:
   test:
-    runs-on: arc-runner-set
-    container: maven:3-eclipse-temurin-25
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
 
       - name: Install Playwright browsers
         run: mvn -B exec:java -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="install --with-deps chromium"
@@ -39,6 +45,7 @@ jobs:
         run: mvn -B clean test -Dtest=RegressionSuiteTest -Dspring.profiles.active=dev
 
       - name: Generate Allure report
+        id: allure
         if: always()
         run: mvn -B allure:report
 
