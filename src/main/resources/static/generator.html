@@ -210,7 +210,7 @@
     <div class="loading-text"><strong>AI is crafting your CV…</strong>This may take up to 30 seconds.</div>
   </div>
 
-  <div class="cv-result-wrap" id="cvResultWrap">
+  <div class="cv-result-wrap" id="cvResultWrap" data-testid="cv-result">
     <div class="cv-result-actions">
       <button id="btnEditForm" data-testid="btn-edit-form" class="btn-secondary" onclick="document.getElementById('cvForm').scrollIntoView({behavior:'smooth'})">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>Edit Form
@@ -223,7 +223,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download PDF
       </button>
     </div>
-    <div class="cv-doc" id="cvDoc"></div>
+A    <div class="cv-doc" id="cvDoc" data-testid="cv-doc"></div>
   </div>
 </div>
 
