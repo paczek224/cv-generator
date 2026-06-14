@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>paczeklab — Darmowy generator CV online z AI | Stwórz CV w kilka sekund</title>
-  <meta name="description" content="Stwórz profesjonalne CV w kilka sekund z darmowym generatorem CV online opartym na AI. Bez zakładania konta, za darmo. paczeklab tworzy proste narzędzia do codziennych zadań."/>
+  <title>Darmowy generator CV online z AI — stwórz CV w kilka sekund | paczeklab</title>
+  <meta name="description" content="Darmowy generator CV online oparty na AI. Stwórz profesjonalne CV w kilka sekund, pobierz w PDF — bez zakładania konta. Kreator CV po polsku i angielsku od paczeklab."/>
+  <meta name="keywords" content="generator CV, darmowe CV online, kreator CV AI, CV po polsku, generator CV PDF, paczeklab"/>
   <link rel="canonical" href="https://paczeklab.pl/"/>
   <link rel="alternate" hreflang="pl" href="https://paczeklab.pl/"/>
   <link rel="alternate" hreflang="en" href="https://paczeklab.pl/?lang=en"/>
@@ -16,10 +17,10 @@
   <meta property="og:site_name" content="paczeklab"/>
   <meta property="og:locale" content="pl_PL"/>
   <meta property="og:locale:alternate" content="en_US"/>
-  <meta property="og:title" content="paczeklab — Darmowy generator CV online z AI"/>
+  <meta property="og:title" content="Darmowy generator CV online z AI — paczeklab"/>
   <meta property="og:description" content="Stwórz profesjonalne CV w kilka sekund z darmowym generatorem CV online opartym na AI. Bez zakładania konta, za darmo."/>
   <meta name="twitter:card" content="summary_large_image"/>
-  <meta name="twitter:title" content="paczeklab — Darmowy generator CV online z AI"/>
+  <meta name="twitter:title" content="Darmowy generator CV online z AI — paczeklab"/>
   <meta name="twitter:description" content="Stwórz profesjonalne CV w kilka sekund z darmowym generatorem CV online opartym na AI. Bez zakładania konta, za darmo."/>
 
   <!-- Structured data (schema.org) -->
@@ -56,6 +57,52 @@
           "price": "0",
           "priceCurrency": "PLN"
         }
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://paczeklab.pl/#faq",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Czy generator CV jest darmowy?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Tak. Generator CV paczeklab jest w pełni darmowy — tworzenie i pobieranie CV w formacie PDF nic nie kosztuje."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Czy muszę zakładać konto, żeby stworzyć CV?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Nie. Nie wymagamy rejestracji ani logowania. Wystarczy wypełnić formularz i pobrać gotowe CV."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "W jakim formacie pobiorę swoje CV?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "CV pobierzesz jako gotowy plik PDF, który możesz od razu wysłać do pracodawcy lub załączyć do aplikacji."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Czy CV tworzy sztuczna inteligencja?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Tak. Wpisujesz swoje dane i luźne notatki, a AI redaguje z nich profesjonalne, dopracowane opisy doświadczenia i umiejętności."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "W jakich językach mogę stworzyć CV?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Generator działa po polsku i po angielsku, dzięki czemu przygotujesz CV na polski i międzynarodowy rynek pracy."
+            }
+          }
+        ]
       }
     ]
   }
@@ -69,7 +116,7 @@
       --text-light:rgba(255,255,255,.92); --text-muted:rgba(255,255,255,.62);
     }
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    html,body{height:100%}
+    html{scroll-behavior:smooth}
     body{
       font-family:'Inter',-apple-system,sans-serif;
       background:linear-gradient(135deg,#1e1b4b 0%,#4338ca 50%,#7c3aed 100%);
@@ -109,14 +156,14 @@
     .lang-select::after{content:'▾';position:absolute;right:14px;top:50%;transform:translateY(-50%);pointer-events:none;font-size:.8rem;color:var(--text-muted)}
 
     /* ── Hero ── */
-    .hero{position:relative;z-index:2;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px clamp(20px,5vw,48px) 70px}
+    .hero{position:relative;z-index:2;min-height:78vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px clamp(20px,5vw,48px) 70px}
     .eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:.8rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);padding:7px 16px;border-radius:100px;margin-bottom:28px;animation:rise .6s ease both}
     .eyebrow .dot{width:7px;height:7px;border-radius:50%;background:#4ade80;box-shadow:0 0 8px #4ade80;animation:pulseDot 2s ease-in-out infinite}
     @keyframes pulseDot{0%,100%{opacity:1}50%{opacity:.4}}
 
-    .hero h1{font-family:'Poppins',sans-serif;font-weight:700;font-size:clamp(2.1rem,6vw,3.7rem);line-height:1.08;letter-spacing:-.03em;max-width:18ch;animation:rise .6s .05s ease both}
+    .hero h1{font-family:'Poppins',sans-serif;font-weight:700;font-size:clamp(2.1rem,6vw,3.7rem);line-height:1.08;letter-spacing:-.03em;max-width:20ch;animation:rise .6s .05s ease both}
     .hero h1 .grad{background:linear-gradient(90deg,#a78bfa,#c084fc,#f0abfc);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-    .hero p{margin-top:22px;font-size:clamp(1rem,2.4vw,1.22rem);line-height:1.6;color:var(--text-muted);max-width:60ch;animation:rise .6s .12s ease both}
+    .hero p.lead{margin-top:22px;font-size:clamp(1rem,2.4vw,1.22rem);line-height:1.6;color:var(--text-muted);max-width:60ch;animation:rise .6s .12s ease both}
 
     @keyframes rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
 
@@ -147,12 +194,43 @@
 
     .cta-sub{margin-top:16px;font-size:.85rem;color:var(--text-muted);animation:rise .6s .28s ease both}
 
+    /* ── Content sections (SEO) ── */
+    .section{position:relative;z-index:2;width:100%;max-width:1080px;margin:0 auto;padding:46px clamp(20px,5vw,48px)}
+    .section h2{font-family:'Poppins',sans-serif;font-weight:700;font-size:clamp(1.5rem,3.5vw,2.2rem);letter-spacing:-.02em;text-align:center;margin-bottom:12px}
+    .section .section-lead{text-align:center;color:var(--text-muted);max-width:60ch;margin:0 auto 38px;line-height:1.6}
+
+    .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px}
+    .card-feat{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:26px 24px;backdrop-filter:blur(6px)}
+    .card-feat .ico{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#a78bfa,#c084fc);display:flex;align-items:center;justify-content:center;margin-bottom:16px}
+    .card-feat .ico svg{width:22px;height:22px;stroke:#1e1b4b;fill:none;stroke-width:2.2}
+    .card-feat h3{font-family:'Poppins',sans-serif;font-weight:600;font-size:1.12rem;margin-bottom:8px}
+    .card-feat p{color:var(--text-muted);line-height:1.55;font-size:.95rem}
+
+    /* steps */
+    .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;counter-reset:step}
+    .step{position:relative;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:26px 24px}
+    .step::before{counter-increment:step;content:counter(step);display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#a855f7);font-family:'Poppins',sans-serif;font-weight:700;margin-bottom:14px}
+    .step h3{font-family:'Poppins',sans-serif;font-weight:600;font-size:1.08rem;margin-bottom:8px}
+    .step p{color:var(--text-muted);line-height:1.55;font-size:.95rem}
+
+    /* FAQ */
+    .faq{max-width:760px;margin:0 auto}
+    .faq details{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:0 20px;margin-bottom:12px}
+    .faq summary{list-style:none;cursor:pointer;padding:18px 0;font-family:'Poppins',sans-serif;font-weight:600;font-size:1.02rem;display:flex;justify-content:space-between;align-items:center;gap:14px}
+    .faq summary::-webkit-details-marker{display:none}
+    .faq summary::after{content:'+';font-size:1.4rem;color:var(--accent);transition:transform .2s;flex-shrink:0}
+    .faq details[open] summary::after{transform:rotate(45deg)}
+    .faq details p{color:var(--text-muted);line-height:1.6;padding:0 0 18px;font-size:.97rem}
+
+    .mid-cta{text-align:center;margin-top:44px}
+
     /* ── Footer ── */
-    .foot{position:relative;z-index:2;text-align:center;padding:20px;font-size:.8rem;color:var(--text-muted)}
+    .foot{position:relative;z-index:2;text-align:center;padding:28px 20px;font-size:.8rem;color:var(--text-muted);border-top:1px solid rgba(255,255,255,.08);margin-top:30px}
 
     @media (prefers-reduced-motion:reduce){
+      html{scroll-behavior:auto}
       .blob,.cta,.cta::before,.eyebrow .dot{animation:none}
-      .eyebrow,.hero h1,.hero p,.cta-wrap,.cta-sub{animation:none}
+      .eyebrow,.hero h1,.hero p.lead,.cta-wrap,.cta-sub{animation:none}
     }
   </style>
 </head>
@@ -177,18 +255,101 @@
   </div>
 </header>
 
-<main class="hero">
-  <span class="eyebrow"><span class="dot"></span><span data-i18n="eyebrow">paczeklab · narzędzia na co dzień</span></span>
-  <h1 data-i18n="title">Witaj w <span class="grad">paczeklab</span></h1>
-  <p data-i18n="lead">paczeklab tworzy proste i sprytne narzędzia, które pomagają ludziom rozwiązywać codzienne problemy — szybko i bez zbędnych komplikacji. Pierwsze z nich napisze za Ciebie dopracowane, profesjonalne CV w kilka sekund.</p>
+<main>
+<section class="hero">
+  <span class="eyebrow"><span class="dot"></span><span data-i18n="eyebrow">Darmowy generator CV online z AI</span></span>
+  <h1 data-i18n="title">Darmowy <span class="grad">generator CV</span> online z AI</h1>
+  <p class="lead" data-i18n="lead">Stwórz profesjonalne CV w kilka sekund. paczeklab to darmowy kreator CV online oparty na sztucznej inteligencji — wpisujesz swoje dane, a AI redaguje gotowe CV do pobrania w PDF. Bez zakładania konta.</p>
 
   <div class="cta-wrap">
     <a class="cta" href="/generator.html">
-      <span data-i18n="cta">Wygeneruj CV</span>
+      <span data-i18n="cta">Wygeneruj CV za darmo</span>
       <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
     </a>
   </div>
-  <p class="cta-sub" data-i18n="ctaSub">Za darmo · bez zakładania konta</p>
+  <p class="cta-sub" data-i18n="ctaSub">Za darmo · bez zakładania konta · gotowe CV w PDF</p>
+</section>
+
+<!-- Features -->
+<section class="section" id="funkcje">
+  <h2 data-i18n="featTitle">Dlaczego warto wybrać generator CV paczeklab</h2>
+  <p class="section-lead" data-i18n="featLead">Proste narzędzie, które oszczędza czas i pomaga przejść przez selekcję CV — po polsku i po angielsku.</p>
+  <div class="cards">
+    <div class="card-feat">
+      <span class="ico"><svg viewBox="0 0 24 24"><path d="M12 2l1.8 5.5H19l-4.6 3.4L16.2 16 12 12.7 7.8 16l1.8-5.1L5 7.5h5.2z"/></svg></span>
+      <h3 data-i18n="feat1Title">CV pisane przez AI</h3>
+      <p data-i18n="feat1Body">Wpisujesz luźne notatki o doświadczeniu i umiejętnościach, a sztuczna inteligencja zamienia je w dopracowane, profesjonalne opisy.</p>
+    </div>
+    <div class="card-feat">
+      <span class="ico"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
+      <h3 data-i18n="feat2Title">Za darmo, bez konta</h3>
+      <p data-i18n="feat2Body">Nie pobieramy opłat i nie wymagamy rejestracji. Wchodzisz, wypełniasz formularz i od razu pobierasz swoje CV.</p>
+    </div>
+    <div class="card-feat">
+      <span class="ico"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg></span>
+      <h3 data-i18n="feat3Title">Gotowy plik PDF</h3>
+      <p data-i18n="feat3Body">Pobierasz CV jako estetyczny plik PDF gotowy do wysłania do pracodawcy lub załączenia do aplikacji online.</p>
+    </div>
+    <div class="card-feat">
+      <span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 010 20M12 2a15 15 0 000 20"/></svg></span>
+      <h3 data-i18n="feat4Title">Po polsku i po angielsku</h3>
+      <p data-i18n="feat4Body">Przygotujesz CV na polski i międzynarodowy rynek pracy — w obu językach, w tym samym narzędziu.</p>
+    </div>
+  </div>
+</section>
+
+<!-- How it works -->
+<section class="section" id="jak-dziala">
+  <h2 data-i18n="howTitle">Jak stworzyć CV w 3 krokach</h2>
+  <p class="section-lead" data-i18n="howLead">Cały proces zajmuje kilka minut — bez instalacji i bez zakładania konta.</p>
+  <div class="steps">
+    <div class="step">
+      <h3 data-i18n="step1Title">Wpisz swoje dane</h3>
+      <p data-i18n="step1Body">Uzupełnij dane kontaktowe, doświadczenie, wykształcenie i umiejętności. Wystarczą krótkie notatki.</p>
+    </div>
+    <div class="step">
+      <h3 data-i18n="step2Title">AI tworzy treść CV</h3>
+      <p data-i18n="step2Body">Sztuczna inteligencja redaguje profesjonalne opisy i układa je w czytelne, spójne CV.</p>
+    </div>
+    <div class="step">
+      <h3 data-i18n="step3Title">Pobierz CV w PDF</h3>
+      <p data-i18n="step3Body">Pobierasz gotowy plik PDF i od razu wysyłasz go do wybranych pracodawców.</p>
+    </div>
+  </div>
+  <div class="mid-cta">
+    <a class="cta" href="/generator.html">
+      <span data-i18n="cta">Wygeneruj CV za darmo</span>
+      <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </a>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" id="faq">
+  <h2 data-i18n="faqTitle">Najczęściej zadawane pytania</h2>
+  <div class="faq">
+    <details>
+      <summary data-i18n="faq1Q">Czy generator CV jest darmowy?</summary>
+      <p data-i18n="faq1A">Tak. Generator CV paczeklab jest w pełni darmowy — tworzenie i pobieranie CV w formacie PDF nic nie kosztuje.</p>
+    </details>
+    <details>
+      <summary data-i18n="faq2Q">Czy muszę zakładać konto, żeby stworzyć CV?</summary>
+      <p data-i18n="faq2A">Nie. Nie wymagamy rejestracji ani logowania. Wystarczy wypełnić formularz i pobrać gotowe CV.</p>
+    </details>
+    <details>
+      <summary data-i18n="faq3Q">W jakim formacie pobiorę swoje CV?</summary>
+      <p data-i18n="faq3A">CV pobierzesz jako gotowy plik PDF, który możesz od razu wysłać do pracodawcy lub załączyć do aplikacji.</p>
+    </details>
+    <details>
+      <summary data-i18n="faq4Q">Czy CV tworzy sztuczna inteligencja?</summary>
+      <p data-i18n="faq4A">Tak. Wpisujesz swoje dane i luźne notatki, a AI redaguje z nich profesjonalne, dopracowane opisy doświadczenia i umiejętności.</p>
+    </details>
+    <details>
+      <summary data-i18n="faq5Q">W jakich językach mogę stworzyć CV?</summary>
+      <p data-i18n="faq5A">Generator działa po polsku i po angielsku, dzięki czemu przygotujesz CV na polski i międzynarodowy rynek pracy.</p>
+    </details>
+  </div>
+</section>
 </main>
 
 <footer class="foot">
@@ -198,24 +359,82 @@
 <script>
   const I18N = {
     en: {
-      eyebrow: 'paczeklab · everyday tools',
-      title:   'Welcome to <span class="grad">paczeklab</span>',
-      lead:    'paczeklab builds simple, smart tools that help people solve everyday problems — fast and without the hassle. Our first one writes a polished, professional CV for you in seconds.',
-      cta:     'Generate CV',
-      ctaSub:  'Free to use · no sign-up required',
+      eyebrow: 'Free AI CV generator online',
+      title:   'Free AI <span class="grad">CV generator</span> online',
+      lead:    'Build a professional CV in seconds. paczeklab is a free online CV maker powered by AI — you enter your details and the AI writes a ready-to-download PDF CV. No sign-up required.',
+      cta:     'Generate your CV free',
+      ctaSub:  'Free · no sign-up · ready-to-download PDF',
+      featTitle: 'Why choose the paczeklab CV generator',
+      featLead:  'A simple tool that saves time and helps you get through CV screening — in English and Polish.',
+      feat1Title: 'CV written by AI',
+      feat1Body:  'Drop in rough notes about your experience and skills, and the AI turns them into polished, professional descriptions.',
+      feat2Title: 'Free, no account',
+      feat2Body:  'No fees and no sign-up. Just open the app, fill in the form and download your CV right away.',
+      feat3Title: 'Ready PDF file',
+      feat3Body:  'Download your CV as a clean PDF, ready to send to employers or attach to online applications.',
+      feat4Title: 'English and Polish',
+      feat4Body:  'Prepare a CV for the Polish and international job market — in both languages, in one tool.',
+      howTitle: 'Create a CV in 3 steps',
+      howLead:  'The whole process takes a few minutes — no install and no account.',
+      step1Title: 'Enter your details',
+      step1Body:  'Add your contact info, experience, education and skills. Short notes are enough.',
+      step2Title: 'AI writes your CV',
+      step2Body:  'The AI drafts professional descriptions and arranges them into a clean, consistent CV.',
+      step3Title: 'Download the PDF',
+      step3Body:  'Download the finished PDF file and send it straight to the employers you choose.',
+      faqTitle: 'Frequently asked questions',
+      faq1Q: 'Is the CV generator free?',
+      faq1A: 'Yes. The paczeklab CV generator is completely free — creating and downloading your CV as a PDF costs nothing.',
+      faq2Q: 'Do I need an account to create a CV?',
+      faq2A: 'No. We do not require registration or login. Just fill in the form and download your finished CV.',
+      faq3Q: 'What format will my CV be in?',
+      faq3A: 'You download your CV as a ready PDF file that you can send to an employer or attach to an application right away.',
+      faq4Q: 'Is the CV created by artificial intelligence?',
+      faq4A: 'Yes. You enter your details and rough notes, and the AI turns them into professional, polished descriptions of your experience and skills.',
+      faq5Q: 'Which languages can I create a CV in?',
+      faq5A: 'The generator works in Polish and English, so you can prepare a CV for the Polish and international job market.',
       foot:    '© 2026 paczeklab — tools that make everyday life easier.',
-      docTitle:    'paczeklab — Free AI CV generator online | Build a CV in seconds',
-      metaDesc:    'Build a professional CV in seconds with a free AI-powered CV generator online. No sign-up, free to use. paczeklab makes simple tools for everyday tasks.'
+      docTitle:    'Free AI CV generator online — build a CV in seconds | paczeklab',
+      metaDesc:    'Free AI-powered CV generator online. Build a professional CV in seconds and download it as a PDF — no sign-up. CV maker in English and Polish by paczeklab.'
     },
     pl: {
-      eyebrow: 'paczeklab · narzędzia na co dzień',
-      title:   'Witaj w <span class="grad">paczeklab</span>',
-      lead:    'paczeklab tworzy proste i sprytne narzędzia, które pomagają ludziom rozwiązywać codzienne problemy — szybko i bez zbędnych komplikacji. Pierwsze z nich napisze za Ciebie dopracowane, profesjonalne CV w kilka sekund.',
-      cta:     'Wygeneruj CV',
-      ctaSub:  'Za darmo · bez zakładania konta',
+      eyebrow: 'Darmowy generator CV online z AI',
+      title:   'Darmowy <span class="grad">generator CV</span> online z AI',
+      lead:    'Stwórz profesjonalne CV w kilka sekund. paczeklab to darmowy kreator CV online oparty na sztucznej inteligencji — wpisujesz swoje dane, a AI redaguje gotowe CV do pobrania w PDF. Bez zakładania konta.',
+      cta:     'Wygeneruj CV za darmo',
+      ctaSub:  'Za darmo · bez zakładania konta · gotowe CV w PDF',
+      featTitle: 'Dlaczego warto wybrać generator CV paczeklab',
+      featLead:  'Proste narzędzie, które oszczędza czas i pomaga przejść przez selekcję CV — po polsku i po angielsku.',
+      feat1Title: 'CV pisane przez AI',
+      feat1Body:  'Wpisujesz luźne notatki o doświadczeniu i umiejętnościach, a sztuczna inteligencja zamienia je w dopracowane, profesjonalne opisy.',
+      feat2Title: 'Za darmo, bez konta',
+      feat2Body:  'Nie pobieramy opłat i nie wymagamy rejestracji. Wchodzisz, wypełniasz formularz i od razu pobierasz swoje CV.',
+      feat3Title: 'Gotowy plik PDF',
+      feat3Body:  'Pobierasz CV jako estetyczny plik PDF gotowy do wysłania do pracodawcy lub załączenia do aplikacji online.',
+      feat4Title: 'Po polsku i po angielsku',
+      feat4Body:  'Przygotujesz CV na polski i międzynarodowy rynek pracy — w obu językach, w tym samym narzędziu.',
+      howTitle: 'Jak stworzyć CV w 3 krokach',
+      howLead:  'Cały proces zajmuje kilka minut — bez instalacji i bez zakładania konta.',
+      step1Title: 'Wpisz swoje dane',
+      step1Body:  'Uzupełnij dane kontaktowe, doświadczenie, wykształcenie i umiejętności. Wystarczą krótkie notatki.',
+      step2Title: 'AI tworzy treść CV',
+      step2Body:  'Sztuczna inteligencja redaguje profesjonalne opisy i układa je w czytelne, spójne CV.',
+      step3Title: 'Pobierz CV w PDF',
+      step3Body:  'Pobierasz gotowy plik PDF i od razu wysyłasz go do wybranych pracodawców.',
+      faqTitle: 'Najczęściej zadawane pytania',
+      faq1Q: 'Czy generator CV jest darmowy?',
+      faq1A: 'Tak. Generator CV paczeklab jest w pełni darmowy — tworzenie i pobieranie CV w formacie PDF nic nie kosztuje.',
+      faq2Q: 'Czy muszę zakładać konto, żeby stworzyć CV?',
+      faq2A: 'Nie. Nie wymagamy rejestracji ani logowania. Wystarczy wypełnić formularz i pobrać gotowe CV.',
+      faq3Q: 'W jakim formacie pobiorę swoje CV?',
+      faq3A: 'CV pobierzesz jako gotowy plik PDF, który możesz od razu wysłać do pracodawcy lub załączyć do aplikacji.',
+      faq4Q: 'Czy CV tworzy sztuczna inteligencja?',
+      faq4A: 'Tak. Wpisujesz swoje dane i luźne notatki, a AI redaguje z nich profesjonalne, dopracowane opisy doświadczenia i umiejętności.',
+      faq5Q: 'W jakich językach mogę stworzyć CV?',
+      faq5A: 'Generator działa po polsku i po angielsku, dzięki czemu przygotujesz CV na polski i międzynarodowy rynek pracy.',
       foot:    '© 2026 paczeklab — narzędzia, które ułatwiają codzienność.',
-      docTitle:    'paczeklab — Darmowy generator CV online z AI | Stwórz CV w kilka sekund',
-      metaDesc:    'Stwórz profesjonalne CV w kilka sekund z darmowym generatorem CV online opartym na AI. Bez zakładania konta, za darmo. paczeklab tworzy proste narzędzia do codziennych zadań.'
+      docTitle:    'Darmowy generator CV online z AI — stwórz CV w kilka sekund | paczeklab',
+      metaDesc:    'Darmowy generator CV online oparty na AI. Stwórz profesjonalne CV w kilka sekund, pobierz w PDF — bez zakładania konta. Kreator CV po polsku i angielsku od paczeklab.'
     }
   };
 

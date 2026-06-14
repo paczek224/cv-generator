@@ -3,6 +3,7 @@
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://paczeklab.pl/</loc>
+    <lastmod>2026-06-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="pl" href="https://paczeklab.pl/"/>
@@ -11,7 +12,11 @@
   </url>
   <url>
     <loc>https://paczeklab.pl/generator.html</loc>
+    <lastmod>2026-06-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://paczeklab.pl/generator.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://paczeklab.pl/generator.html?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://paczeklab.pl/generator.html"/>
   </url>
 </urlset>
