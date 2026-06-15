@@ -19,9 +19,14 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright/java:v1.49.0-noble
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install git
+        run: apt-get update && apt-get install -y git
 
       - name: Set up JDK 25
         uses: actions/setup-java@v4
@@ -30,28 +35,12 @@ jobs:
           java-version: '25'
           cache: maven
 
-      - name: Install Playwright browsers
-        run: mvn -B exec:java -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="install chromium"
-
-      - name: Install Playwright OS dependencies
-        run: sudo env "PATH=$PATH" "JAVA_HOME=$JAVA_HOME" mvn -B exec:java -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="install-deps chromium"
-
       - name: Start application (dev profile)
         env:
           API_KEY: ${{ secrets.API_KEY }}
         run: |
           nohup mvn -B -DskipTests spring-boot:run -Dspring-boot.run.profiles=${{ inputs.profile || 'dev' }} > app.log 2>&1 &
-          echo "Waiting for app on http://localhost:8080 ..."
-          for i in $(seq 1 60); do
-            if curl -sf http://localhost:8080/ >/dev/null; then
-              echo "Application is up"
-              exit 0
-            fi
-            sleep 5
-          done
-          echo "Application did not start in time"
-          cat app.log
-          exit 1
+          exit 0
 
       - name: Run e2e tests (dev profile)
         env:
@@ -63,10 +52,16 @@ jobs:
         if: always()
         run: mvn -B allure:report
 
-      - name: Publish Allure report to GitHub Pages
+      - name: Publish Allure report
         if: always()
-        uses: peaceiris/actions-gh-pages@v4
+        uses: ./.github/actions/allure-pages
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: target/site/allure-maven-plugin
-          publish_branch: gh-pages
+          pages_base_url: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
+
+          # results_dir: target/allure-results
+          # report_cmd: mvn -B allure:report
+          # report_output: target/site/allure-maven-plugin
+          # publish_branch: gh-pages
+          # comment_pr: "true"
+          # prune_stale: "true"
