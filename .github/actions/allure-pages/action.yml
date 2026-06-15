@@ -1,0 +1,204 @@
+name: "Allure Report to GitHub Pages"
+description: >
+  Generates an Allure report and publishes it to GitHub Pages at
+  <branch>/<short-sha>/allure. Preserves Allure trends per branch,
+  comments the link in the PR, generates an index page and prunes reports
+  for deleted branches.
+author: "paczek224"
+
+branding:
+  icon: "bar-chart-2"
+  color: "green"
+
+inputs:
+  github_token:
+    description: "Token with write access to gh-pages (usually secrets.GITHUB_TOKEN)."
+    required: true
+  results_dir:
+    description: "Directory with raw Allure results (allure-results)."
+    required: false
+    default: "target/allure-results"
+  report_cmd:
+    description: "Command that generates the HTML report from the results."
+    required: false
+    default: "mvn -B allure:report"
+  report_output:
+    description: "Output directory with the generated HTML report."
+    required: false
+    default: "target/site/allure-maven-plugin"
+  publish_branch:
+    description: "Branch the reports are published to."
+    required: false
+    default: "gh-pages"
+  pages_base_url:
+    description: >
+      Base GitHub Pages URL, e.g. https://user.github.io/repo.
+      Used to build the full link in the outputs and the PR comment.
+    required: false
+    default: ""
+  comment_pr:
+    description: "Whether to add/update a comment with the link in the PR (true/false)."
+    required: false
+    default: "true"
+  prune_stale:
+    description: "Whether to remove reports for branches that no longer exist on origin (true/false)."
+    required: false
+    default: "true"
+
+outputs:
+  report_url:
+    description: "Full URL of the published report."
+    value: ${{ steps.vars.outputs.report_url }}
+  report_path:
+    description: "Report path relative to gh-pages (e.g. main/a1b2c3d/allure)."
+    value: ${{ steps.vars.outputs.dest }}
+
+runs:
+  using: "composite"
+  steps:
+    # 1) Compute the branch name and sha -> destination path
+    - id: vars
+      shell: bash
+      run: |
+        set -euo pipefail
+        BRANCH="${{ github.head_ref || github.ref_name }}"
+        # slashes in the branch name -> dashes, so the path stays flat
+        SAFE_BRANCH="$(echo "$BRANCH" | sed 's#[/ ]#-#g')"
+        SHA="${{ github.event.pull_request.head.sha || github.sha }}"
+        SHORT_SHA="${SHA:0:7}"
+        DEST="${SAFE_BRANCH}/${SHORT_SHA}/allure"
+        BASE="${{ inputs.pages_base_url }}"
+        BASE="${BASE%/}"  # trim the trailing slash if present
+
+        {
+          echo "branch=${BRANCH}"
+          echo "safe_branch=${SAFE_BRANCH}"
+          echo "short_sha=${SHORT_SHA}"
+          echo "dest=${DEST}"
+          echo "report_url=${BASE}/${DEST}/"
+        } >> "$GITHUB_OUTPUT"
+
+    # 2) Fetch the current gh-pages state (may not exist on the 1st run)
+    - id: checkout_pages
+      uses: actions/checkout@v4
+      continue-on-error: true
+      with:
+        ref: ${{ inputs.publish_branch }}
+        path: .gh-pages
+        token: ${{ inputs.github_token }}
+
+    - name: Prepare gh-pages directory
+      shell: bash
+      run: |
+        set -euo pipefail
+        mkdir -p .gh-pages
+        # .nojekyll -> GitHub Pages won't skip folders starting with an underscore (Allure assets)
+        touch .gh-pages/.nojekyll
+
+    # 3) Restore Allure history for trends (per branch)
+    - name: Restore Allure history
+      shell: bash
+      run: |
+        set -euo pipefail
+        HIST=".gh-pages/${{ steps.vars.outputs.safe_branch }}/.allure-history"
+        if [ -d "$HIST" ]; then
+          mkdir -p "${{ inputs.results_dir }}/history"
+          cp -r "$HIST/." "${{ inputs.results_dir }}/history/"
+          echo "Restored history from: $HIST"
+        else
+          echo "No previous history for this branch — first report."
+        fi
+
+    # 4) Generate the HTML report from the results (with the attached history)
+    - name: Generate Allure report
+      if: always()
+      shell: bash
+      run: ${{ inputs.report_cmd }}
+
+    # 5) Place the report in the gh-pages tree + save history for the future
+    - name: Place report and update history
+      if: always()
+      shell: bash
+      env:
+        # taken from the event payload (not git) so it works even when the repo
+        # was checked out as a tarball; passed via env to avoid script injection
+        COMMIT_MSG: ${{ github.event.head_commit.message || github.event.pull_request.title }}
+      run: |
+        set -euo pipefail
+        DEST=".gh-pages/${{ steps.vars.outputs.dest }}"
+        rm -rf "$DEST"
+        mkdir -p "$DEST"
+        cp -r "${{ inputs.report_output }}/." "$DEST/"
+
+        # save the commit subject (first line) next to the report, so the index
+        # page can label the link with the message instead of the bare sha
+        SUBJECT="${COMMIT_MSG%%$'\n'*}"
+        if [ -n "$SUBJECT" ]; then
+          printf '%s\n' "$SUBJECT" > "$(dirname "$DEST")/commit-msg.txt"
+        fi
+
+        # keep the branch history folder for the next run (trends)
+        HIST=".gh-pages/${{ steps.vars.outputs.safe_branch }}/.allure-history"
+        rm -rf "$HIST"
+        mkdir -p "$HIST"
+        if [ -d "${{ inputs.report_output }}/history" ]; then
+          cp -r "${{ inputs.report_output }}/history/." "$HIST/"
+        fi
+        echo "Report placed in: $DEST"
+
+    # 6) Remove reports for branches that no longer exist on origin
+    - name: Prune stale reports
+      if: ${{ inputs.prune_stale == 'true' }}
+      shell: bash
+      run: |
+        set -euo pipefail
+        REPO="${{ github.repository }}"
+        TOKEN="${{ inputs.github_token }}"
+        # live branches (sanitized the same way as the paths)
+        git ls-remote --heads "https://x-access-token:${TOKEN}@github.com/${REPO}.git" \
+          | sed 's#.*refs/heads/##' | sed 's#[/ ]#-#g' | sort -u > /tmp/live_branches.txt
+
+        cd .gh-pages
+        for d in */; do
+          name="${d%/}"
+          if ! grep -qx "$name" /tmp/live_branches.txt; then
+            echo "Removing stale branch report: $name"
+            rm -rf "$name"
+          fi
+        done
+
+    # 7) Generate the index page (landing page)
+    - name: Generate index page
+      if: always()
+      shell: bash
+      run: |
+        set -euo pipefail
+        bash ./.github/actions/allure-pages/generate-index.sh .gh-pages "${{ github.repository }}"
+
+    # 8) Publish the whole tree to GitHub Pages
+    - name: Publish to GitHub Pages
+      if: always()
+      uses: peaceiris/actions-gh-pages@v4
+      with:
+        github_token: ${{ inputs.github_token }}
+        publish_dir: .gh-pages
+        publish_branch: ${{ inputs.publish_branch }}
+        # the .gh-pages tree is already complete (checkout + changes),
+        # so keep_files:false lets the pruning actually work
+        keep_files: false
+        commit_message: "docs: allure report ${{ steps.vars.outputs.dest }}"
+
+    # 9) PR comment with a link to the report
+    - name: PR comment with link
+      if: ${{ inputs.comment_pr == 'true' && github.event_name == 'pull_request' }}
+      uses: marocchino/sticky-pull-request-comment@v2
+      with:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+        header: allure-report
+        message: |
+          ### The Allure report is ready
+
+          Commit: `${{ steps.vars.outputs.short_sha }}`
+          Report: ${{ steps.vars.outputs.report_url }}
+
+          _Updated automatically on every push to this PR._
