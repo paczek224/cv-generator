@@ -63,7 +63,7 @@ HTML
     for sdir in $(ls -1dt "${bdir}"*/ 2>/dev/null); do
       s="$(basename "$sdir")"
       [ -d "${sdir}allure" ] || continue
-      echo "      <li><a class=\"sha\" href=\"./${b}/${s}/allure/\">${b}/${s}</a></li>"
+      echo "      <li><a class=\"sha\" href=\"./${b}/${s}/allure/\">${s}</a></li>"
     done
 
     echo "    </ul>"

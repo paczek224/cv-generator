@@ -4,7 +4,7 @@ description: >
   <branch>/<short-sha>/allure. Preserves Allure trends per branch,
   comments the link in the PR, generates an index page and prunes reports
   for deleted branches.
-author: "Lukasz"
+author: "paczek224"
 
 branding:
   icon: "bar-chart-2"
