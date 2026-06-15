@@ -8,6 +8,9 @@ ROOT="${1:-.}"
 REPO="${2:-}"
 OUT="${ROOT}/index.html"
 
+# escape the bits of text that would break the HTML we emit
+html_escape() { sed -e 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g'; }
+
 {
   cat <<HTML
 <!doctype html>
@@ -29,8 +32,8 @@ OUT="${ROOT}/index.html"
   ul{ list-style:none; margin:0; padding:0; }
   li{ display:flex; align-items:center; gap:10px; padding:7px 0; border-top:1px solid var(--line); }
   li:first-child{ border-top:none; }
-  a.sha{ color:var(--accent); text-decoration:none; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.92rem; }
-  a.sha:hover{ text-decoration:underline; }
+  a.report{ color:var(--accent); text-decoration:none; font-size:.92rem; }
+  a.report:hover{ text-decoration:underline; }
   .empty{ color:var(--muted); }
   footer{ color:var(--muted); font-size:.78rem; margin-top:30px; }
   a{ color:var(--accent); }
@@ -63,7 +66,13 @@ HTML
     for sdir in $(ls -1dt "${bdir}"*/ 2>/dev/null); do
       s="$(basename "$sdir")"
       [ -d "${sdir}allure" ] || continue
-      echo "      <li><a class=\"sha\" href=\"./${b}/${s}/allure/\">${s}</a></li>"
+      # label with the commit message (max 30 chars), fall back to the sha
+      if [ -s "${sdir}commit-msg.txt" ]; then
+        label="$(cut -c1-30 "${sdir}commit-msg.txt" | head -n1 | html_escape)"
+      else
+        label="$s"
+      fi
+      echo "      <li><a class=\"report\" href=\"./${b}/${s}/allure/\">${label}</a></li>"
     done
 
     echo "    </ul>"

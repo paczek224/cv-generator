@@ -119,12 +119,23 @@ runs:
     - name: Place report and update history
       if: always()
       shell: bash
+      env:
+        # taken from the event payload (not git) so it works even when the repo
+        # was checked out as a tarball; passed via env to avoid script injection
+        COMMIT_MSG: ${{ github.event.head_commit.message || github.event.pull_request.title }}
       run: |
         set -euo pipefail
         DEST=".gh-pages/${{ steps.vars.outputs.dest }}"
         rm -rf "$DEST"
         mkdir -p "$DEST"
         cp -r "${{ inputs.report_output }}/." "$DEST/"
+
+        # save the commit subject (first line) next to the report, so the index
+        # page can label the link with the message instead of the bare sha
+        SUBJECT="${COMMIT_MSG%%$'\n'*}"
+        if [ -n "$SUBJECT" ]; then
+          printf '%s\n' "$SUBJECT" > "$(dirname "$DEST")/commit-msg.txt"
+        fi
 
         # keep the branch history folder for the next run (trends)
         HIST=".gh-pages/${{ steps.vars.outputs.safe_branch }}/.allure-history"
