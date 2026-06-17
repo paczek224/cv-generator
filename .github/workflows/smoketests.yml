@@ -1,0 +1,70 @@
+name: smoke-tests
+run-name: "${{ github.actor }}'s ${{ github.ref_name }}/${{github.sha}}} smoke tests #${{github.run_number}}"
+on:
+  pull_request:
+  push:
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: 'Spring profile to run tests with'
+        required: false
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - prod
+
+permissions:
+  contents: write
+  pages: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright/java:v1.49.0-noble
+
+    steps:
+      - name: Install git
+        run: apt-get update && apt-get install -y git
+
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+
+      - name: Start application (dev profile)
+        env:
+          API_KEY: ${{ secrets.API_KEY }}
+        run: |
+          nohup mvn -B -DskipTests spring-boot:run -Dspring-boot.run.profiles=${{ inputs.profile || 'dev' }} > app.log 2>&1 &
+          exit 0
+
+      - name: Run e2e tests (dev profile)
+        env:
+          API_KEY: ${{ secrets.API_KEY }}
+        run: mvn -B clean test -Dtest=SmokeSuiteTest -Dspring.profiles.active=${{ inputs.profile || 'dev' }}
+
+      - name: Generate Allure report
+        id: allure
+        if: always()
+        run: mvn -B allure:report
+
+      - name: Publish Allure report
+        if: always()
+        uses: ./.github/actions/allure-pages
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          pages_base_url: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
+          run_name: "${{ github.actor }}'s ${{ github.ref_name }} run #${{github.run_number}}"
+
+          # results_dir: target/allure-results
+          # report_cmd: mvn -B allure:report
+          # report_output: target/site/allure-maven-plugin
+          # publish_branch: gh-pages
+          # comment_pr: "true"
+          # prune_stale: "true"

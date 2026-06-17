@@ -1,9 +1,9 @@
 name: "Allure Report to GitHub Pages"
 description: >
   Generates an Allure report and publishes it to GitHub Pages at
-  <branch>/<short-sha>/allure. Preserves Allure trends per branch,
-  comments the link in the PR, generates an index page and prunes reports
-  for deleted branches.
+  <branch>/<run-name>/allure, overwriting the previous report for the same
+  run name. Preserves Allure trends per run, comments the link in the PR,
+  generates an index page and prunes reports for deleted branches.
 author: "paczek224"
 
 branding:
@@ -36,6 +36,14 @@ inputs:
       Used to build the full link in the outputs and the PR comment.
     required: false
     default: ""
+  run_name:
+    description: >
+      Grouping key for the report (the workflow run name). Reports are
+      published under <branch>/<run_name>/allure and the previous report for
+      the same run_name is overwritten. Defaults to the workflow name
+      (github.workflow) when not provided.
+    required: false
+    default: ""
   comment_pr:
     description: "Whether to add/update a comment with the link in the PR (true/false)."
     required: false
@@ -50,7 +58,7 @@ outputs:
     description: "Full URL of the published report."
     value: ${{ steps.vars.outputs.report_url }}
   report_path:
-    description: "Report path relative to gh-pages (e.g. main/a1b2c3d/allure)."
+    description: "Report path relative to gh-pages (e.g. main/Smoke-tests/allure)."
     value: ${{ steps.vars.outputs.dest }}
 
 runs:
@@ -66,7 +74,16 @@ runs:
         SAFE_BRANCH="$(echo "$BRANCH" | sed 's#[/ ]#-#g')"
         SHA="${{ github.event.pull_request.head.sha || github.sha }}"
         SHORT_SHA="${SHA:0:7}"
-        DEST="${SAFE_BRANCH}/${SHORT_SHA}/allure"
+
+        # grouping key: the workflow run name (falls back to the workflow name)
+        RUN_NAME="${{ inputs.run_name }}"
+        [ -n "$RUN_NAME" ] || RUN_NAME="${{ github.workflow }}"
+        # the human RUN_NAME stays untouched (it's the label on the index/PR link);
+        # SAFE_RUN is only the folder/URL segment, so collapse every character that
+        # isn't URL-path-safe (spaces, '/', '#', quotes, ...) into a single dash.
+        SAFE_RUN="$(echo "$RUN_NAME" | sed -E 's/[^A-Za-z0-9._-]+/-/g; s/^-+//; s/-+$//')"
+
+        DEST="${SAFE_BRANCH}/${SAFE_RUN}/allure"
         BASE="${{ inputs.pages_base_url }}"
         BASE="${BASE%/}"  # trim the trailing slash if present
 
@@ -74,6 +91,8 @@ runs:
           echo "branch=${BRANCH}"
           echo "safe_branch=${SAFE_BRANCH}"
           echo "short_sha=${SHORT_SHA}"
+          echo "run_name=${RUN_NAME}"
+          echo "safe_run=${SAFE_RUN}"
           echo "dest=${DEST}"
           echo "report_url=${BASE}/${DEST}/"
         } >> "$GITHUB_OUTPUT"
@@ -100,13 +119,13 @@ runs:
       shell: bash
       run: |
         set -euo pipefail
-        HIST=".gh-pages/${{ steps.vars.outputs.safe_branch }}/.allure-history"
+        HIST=".gh-pages/${{ steps.vars.outputs.safe_branch }}/${{ steps.vars.outputs.safe_run }}/.allure-history"
         if [ -d "$HIST" ]; then
           mkdir -p "${{ inputs.results_dir }}/history"
           cp -r "$HIST/." "${{ inputs.results_dir }}/history/"
           echo "Restored history from: $HIST"
         else
-          echo "No previous history for this branch — first report."
+          echo "No previous history for this run — first report."
         fi
 
     # 4) Generate the HTML report from the results (with the attached history)
@@ -123,6 +142,7 @@ runs:
         # taken from the event payload (not git) so it works even when the repo
         # was checked out as a tarball; passed via env to avoid script injection
         COMMIT_MSG: ${{ github.event.head_commit.message || github.event.pull_request.title }}
+        RUN_NAME: ${{ steps.vars.outputs.run_name }}
       run: |
         set -euo pipefail
         DEST=".gh-pages/${{ steps.vars.outputs.dest }}"
@@ -130,15 +150,17 @@ runs:
         mkdir -p "$DEST"
         cp -r "${{ inputs.report_output }}/." "$DEST/"
 
-        # save the commit subject (first line) next to the report, so the index
-        # page can label the link with the message instead of the bare sha
+        # the run folder (parent of allure) gets metadata the index page reads:
+        # the human run name for the link label and the latest commit subject
+        RUN_DIR="$(dirname "$DEST")"
+        printf '%s\n' "$RUN_NAME" > "$RUN_DIR/run-name.txt"
         SUBJECT="${COMMIT_MSG%%$'\n'*}"
         if [ -n "$SUBJECT" ]; then
-          printf '%s\n' "$SUBJECT" > "$(dirname "$DEST")/commit-msg.txt"
+          printf '%s\n' "$SUBJECT" > "$RUN_DIR/commit-msg.txt"
         fi
 
-        # keep the branch history folder for the next run (trends)
-        HIST=".gh-pages/${{ steps.vars.outputs.safe_branch }}/.allure-history"
+        # keep the per-run history folder for the next run (trends)
+        HIST=".gh-pages/${{ steps.vars.outputs.safe_branch }}/${{ steps.vars.outputs.safe_run }}/.allure-history"
         rm -rf "$HIST"
         mkdir -p "$HIST"
         if [ -d "${{ inputs.report_output }}/history" ]; then
@@ -198,6 +220,7 @@ runs:
         message: |
           ### The Allure report is ready
 
+          Run: `${{ steps.vars.outputs.run_name }}`
           Commit: `${{ steps.vars.outputs.short_sha }}`
           Report: ${{ steps.vars.outputs.report_url }}
 
