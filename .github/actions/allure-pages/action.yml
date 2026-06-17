@@ -78,8 +78,10 @@ runs:
         # grouping key: the workflow run name (falls back to the workflow name)
         RUN_NAME="${{ inputs.run_name }}"
         [ -n "$RUN_NAME" ] || RUN_NAME="${{ github.workflow }}"
-        # slashes/spaces -> dashes so the run name is a safe single path segment
-        SAFE_RUN="$(echo "$RUN_NAME" | sed 's#[/ ]#-#g')"
+        # the human RUN_NAME stays untouched (it's the label on the index/PR link);
+        # SAFE_RUN is only the folder/URL segment, so collapse every character that
+        # isn't URL-path-safe (spaces, '/', '#', quotes, ...) into a single dash.
+        SAFE_RUN="$(echo "$RUN_NAME" | sed -E 's/[^A-Za-z0-9._-]+/-/g; s/^-+//; s/-+$//')"
 
         DEST="${SAFE_BRANCH}/${SAFE_RUN}/allure"
         BASE="${{ inputs.pages_base_url }}"

@@ -1,6 +1,7 @@
 name: smoke-tests
-run-name: "Smoke tests #${{github.run_number}} on ${{ github.ref }}/${{github.sha}}} "
+run-name: "${{ github.actor }}'s ${{ github.ref_name }}/${{github.sha}}} smoke tests #${{github.run_number}}"
 on:
+  pull_request:
   push:
   workflow_dispatch:
     inputs:
@@ -16,11 +17,6 @@ on:
 permissions:
   contents: write
   pages: write
-
-# stable grouping key for the Allure landing page (the run-name above stays
-# dynamic for display; env can't be used in run-name, so it lives here)
-env:
-  group_name: "Smoke tests"
 
 jobs:
   test:
@@ -64,7 +60,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           pages_base_url: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
-          run_name: ${{ env.group_name }}
+          run_name: "${{ github.actor }}'s ${{ github.ref_name }} run #${{github.run_number}}"
 
           # results_dir: target/allure-results
           # report_cmd: mvn -B allure:report
