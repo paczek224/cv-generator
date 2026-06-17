@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Builds the index page (index.html) listing all Allure reports
-# grouped by branch and commit.
+# grouped by branch and workflow run name.
 # Usage: generate-index.sh <gh-pages-dir> <owner/repo>
 set -euo pipefail
 
@@ -30,10 +30,11 @@ html_escape() { sed -e 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g'; }
   .branch h2{ font-size:1.05rem; margin:0 0 10px; display:flex; align-items:center; gap:8px; }
   .branch h2 .tag{ font-size:.72rem; color:var(--muted); font-weight:400; }
   ul{ list-style:none; margin:0; padding:0; }
-  li{ display:flex; align-items:center; gap:10px; padding:7px 0; border-top:1px solid var(--line); }
+  li{ display:flex; align-items:baseline; gap:10px; padding:7px 0; border-top:1px solid var(--line); }
   li:first-child{ border-top:none; }
   a.report{ color:var(--accent); text-decoration:none; font-size:.92rem; }
   a.report:hover{ text-decoration:underline; }
+  li .sub{ color:var(--muted); font-size:.78rem; }
   .empty{ color:var(--muted); }
   footer{ color:var(--muted); font-size:.78rem; margin-top:30px; }
   a{ color:var(--accent); }
@@ -62,17 +63,22 @@ HTML
     echo "    <h2>${b} <span class=\"tag\">branch</span></h2>"
     echo "    <ul>"
 
-    # commits from newest (by modification time)
+    # workflow runs from newest (by modification time)
     for sdir in $(ls -1dt "${bdir}"*/ 2>/dev/null); do
       s="$(basename "$sdir")"
       [ -d "${sdir}allure" ] || continue
-      # label with the commit message (max 30 chars), fall back to the sha
-      if [ -s "${sdir}commit-msg.txt" ]; then
-        label="$(cut -c1-30 "${sdir}commit-msg.txt" | head -n1 | html_escape)"
+      # label with the run name, fall back to the folder name
+      if [ -s "${sdir}run-name.txt" ]; then
+        label="$(head -n1 "${sdir}run-name.txt" | html_escape)"
       else
         label="$s"
       fi
-      echo "      <li><a class=\"report\" href=\"./${b}/${s}/allure/\">${label}</a></li>"
+      # secondary line: latest commit subject (max 40 chars) for this run
+      sub=""
+      if [ -s "${sdir}commit-msg.txt" ]; then
+        sub="$(cut -c1-40 "${sdir}commit-msg.txt" | head -n1 | html_escape)"
+      fi
+      echo "      <li><a class=\"report\" href=\"./${b}/${s}/allure/\">${label}</a><span class=\"sub\">${sub}</span></li>"
     done
 
     echo "    </ul>"
