@@ -5,6 +5,7 @@ import com.github.paczek224.tests.page.cv.generator.GeneratorPage;
 import com.github.paczek224.tests.page.cv.generator.components.CertificationRowComponent;
 import com.github.paczek224.tests.page.cv.generator.components.EducationRowComponent;
 import com.github.paczek224.tests.page.cv.generator.components.JobInfoRowComponent;
+import com.microsoft.playwright.assertions.PlaywrightAssertions;
 import com.paczek224.cvaigenerator.dto.CvRequest;
 import com.paczek224.cvaigenerator.dto.CvRequest.CertEntry;
 import com.paczek224.cvaigenerator.dto.CvRequest.EducationEntry;
@@ -48,6 +49,11 @@ public class CvGeneratorSteps extends CucumberSpringBaseTest{
     @When("I click generate")
     public void iClickGenerate() {
         generatorPage.generate();
+    }
+
+    @Then("Generate button is enabled")
+    public void generateButtonIsEnabled() {
+        PlaywrightAssertions.assertThat(generatorPage.generateButton()).isEnabled();
     }
 
     @Then("Cv is correctly generated")
