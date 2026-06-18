@@ -60,7 +60,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           pages_base_url: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
-          run_name: "${{ github.actor }}'s ${{ github.ref_name }} run #${{github.run_number}}"
+          run_name: "smoke run #${{github.run_number}} ${{ github.ref_name }}/${{github.sha}} triggered by ${{ github.actor }}"
 
           # results_dir: target/allure-results
           # report_cmd: mvn -B allure:report
