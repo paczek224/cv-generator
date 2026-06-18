@@ -8,6 +8,8 @@ services:
       - WATERMARK=false
     expose:
       - "8080"        # widoczne TYLKO w sieci dockera, nie na świat
+    networks:
+      - cv-net
 
   cloudflared:
     image: cloudflare/cloudflared:latest
@@ -17,3 +19,10 @@ services:
       - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
     depends_on:
       - app
+    networks:
+      - cv-net        # ta sama sieć co pdf-app, żeby tunel widział obie apki
+
+networks:
+  cv-net:
+    external: true
+    name: cv-net
