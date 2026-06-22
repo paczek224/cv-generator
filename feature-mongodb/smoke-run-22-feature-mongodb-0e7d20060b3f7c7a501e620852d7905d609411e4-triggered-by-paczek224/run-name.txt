@@ -1,0 +1,1 @@
+smoke run #22 feature/mongodb/0e7d20060b3f7c7a501e620852d7905d609411e4 triggered by paczek224
