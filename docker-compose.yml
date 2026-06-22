@@ -6,8 +6,12 @@ services:
       - SPRING_PROFILES_ACTIVE=prod
       - API_KEY=${API_KEY}
       - WATERMARK=false
+      - MONGODB_URI=mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongo:27017/cv-generator?authSource=admin
     expose:
-      - "8080"        # widoczne TYLKO w sieci dockera, nie na świat
+      - "8080"        # visible ONLY within the docker network, not to the public
+    networks:
+      - backend-net   # communication with MongoDB (docker-compose.mongo.yml)
+      - default       # communication with cloudflared
 
   cloudflared:
     image: cloudflare/cloudflared:latest
@@ -17,3 +21,7 @@ services:
       - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
     depends_on:
       - app
+
+networks:
+  backend-net:
+    external: true    # created by docker-compose.mongo.yml

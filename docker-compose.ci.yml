@@ -1,0 +1,8 @@
+# Override used only in CI (merged with docker-compose.mongo.yml).
+# Publishes the Mongo port on the runner host so that the application started
+# via maven (a process on the host, outside the backend-net network) can
+# connect through localhost:27017.
+services:
+  mongo:
+    ports:
+      - "27017:27017"

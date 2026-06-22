@@ -2,7 +2,7 @@ package com.paczek224.cvaigenerator.controller;
 
 import com.paczek224.cvaigenerator.dto.CvRequest;
 import com.paczek224.cvaigenerator.dto.CvResponse;
-import com.paczek224.cvaigenerator.service.CvGeneratorAiClient;
+import com.paczek224.cvaigenerator.service.CvGenerationService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,15 +12,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/cv")
 public class CvController {
 
-    private final CvGeneratorAiClient client;
+    private final CvGenerationService service;
 
-    public CvController(CvGeneratorAiClient client) {
-        this.client = client;
+    public CvController(CvGenerationService service) {
+        this.service = service;
     }
 
     @PostMapping("/generate")
     public CvResponse generate(@RequestBody CvRequest req) {
-        return client.generateStructuredCv(
+        return service.generate(
                 buildUserData(req),
                 req.getJobOffer(),
                 req.isEnhanceCv(),

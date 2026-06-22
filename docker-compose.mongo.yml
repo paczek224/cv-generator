@@ -1,0 +1,29 @@
+# Separate compose file for MongoDB.
+# Creates the 'backend-net' network used by the database container to
+# communicate with the application.
+# Start it BEFORE docker-compose.yml (app), because app joins this network.
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
+    volumes:
+      - mongo-data:/data/db
+    expose:
+      - "27017"       # visible ONLY within the backend-net network, not on the host
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - backend-net
+
+volumes:
+  mongo-data:
+
+networks:
+  backend-net:
+    name: backend-net

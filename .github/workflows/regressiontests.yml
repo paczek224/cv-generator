@@ -23,13 +23,13 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
-    container:
-      image: mcr.microsoft.com/playwright/java:v1.49.0-noble
+
+    env:
+      MONGO_USERNAME: ${{secrets.MONGO_USERNAME}}
+      MONGO_PASSWORD: ${{secrets.MONGO_PASSWORD}}
+      MONGODB_URI: "mongodb://${{secrets.MONGO_USERNAME}}:${{secrets.MONGO_PASSWORD}}@localhost:27017/cv-generator?authSource=admin"
 
     steps:
-      - name: Install git
-        run: apt-get update && apt-get install -y git
-
       - uses: actions/checkout@v4
 
       - name: Set up JDK 25
@@ -38,6 +38,12 @@ jobs:
           distribution: temurin
           java-version: '25'
           cache: maven
+
+      - name: Start MongoDB (docker compose)
+        run: docker compose -f docker-compose.mongo.yml -f docker-compose.ci.yml up -d --wait mongo
+
+      - name: Install Playwright browsers
+        run: mvn -B compile exec:java -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="install --with-deps chromium"
 
       - name: Start application (dev profile)
         env:
@@ -70,3 +76,7 @@ jobs:
           # publish_branch: gh-pages
           # comment_pr: "true"
           # prune_stale: "true"
+
+      - name: Stop MongoDB (docker compose)
+        if: always()
+        run: docker compose -f docker-compose.mongo.yml -f docker-compose.ci.yml down -v
