@@ -5,6 +5,11 @@ spring:
     name: cv-ai-generator
   profiles:
     active: dev
+  data:
+    mongodb:
+      auto-index-creation: true
+  mongodb:
+    uri: ${MONGODB_URI:mongodb://localhost:27017/cv-generator}
 
 logging:
   level:

@@ -1,0 +1,11 @@
+# Server override (merged with docker-compose.mongo.yml).
+# Publishes Mongo ONLY on the host loopback interface (127.0.0.1:27017),
+# so it can be reached remotely through an SSH tunnel (e.g. MongoDB Compass).
+# It does NOT expose the database to the public.
+#
+# Usage on the server (e.g. Mikrus):
+#   docker compose -f docker-compose.mongo.yml -f docker-compose.server.yml up -d
+services:
+  mongo:
+    ports:
+      - "127.0.0.1:27017:27017"

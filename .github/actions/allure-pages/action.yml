@@ -209,19 +209,3 @@ runs:
         # so keep_files:false lets the pruning actually work
         keep_files: false
         commit_message: "docs: allure report ${{ steps.vars.outputs.dest }}"
-
-    # 9) PR comment with a link to the report
-    - name: PR comment with link
-      if: ${{ inputs.comment_pr == 'true' && github.event_name == 'pull_request' }}
-      uses: marocchino/sticky-pull-request-comment@v2
-      with:
-        GITHUB_TOKEN: ${{ inputs.github_token }}
-        header: allure-report
-        message: |
-          ### The Allure report is ready
-
-          Run: `${{ steps.vars.outputs.run_name }}`
-          Commit: `${{ steps.vars.outputs.short_sha }}`
-          Report: ${{ steps.vars.outputs.report_url }}
-
-          _Updated automatically on every push to this PR._
